@@ -1,0 +1,150 @@
+#!/bin/bash
+
+# update packages
+sudo apt update -y && sudo apt upgrade -y
+
+# install dependencies
+sudo apt install -y gcc libjpeg-dev python-dev python3-dev libxml2-dev libxslt1-dev libldap2-dev libsasl2-dev graphicsmagick poppler-utils pdftk libreoffice qpdf build-essential supervisor
+
+# get the Plone unified installer and run it
+wget https://launchpad.net/plone/5.2/5.2.2/+download/Plone-5.2.2-UnifiedInstaller.tgz
+tar xfz Plone-5.2.2-UnifiedInstaller.tgz
+cd Plone-5.2.2-UnifiedInstaller
+sudo ./install.sh --with-python=`which python3` --password=admin zeo
+
+# add eggs to buildout
+export BUILDOUTDIR=/opt/plone/zeocluster
+export BUILDOUTCFG=/opt/plone/zeocluster/buildout.cfg
+sed -i '/    Products.PloneHotfix20200121/  a \ \ \ \ collective.documentviewer' $BUILDOUTCFG
+sed -i '/    Products.PloneHotfix20200121/  a \ \ \ \ collective.easyform' $BUILDOUTCFG
+sed -i '/    Products.PloneHotfix20200121/  a \ \ \ \ pas.plugins.ldap' $BUILDOUTCFG
+sed -i '/    Products.PloneHotfix20200121/  a \ \ \ \ collective.pwexpiry' $BUILDOUTCFG
+sed -i '/    Products.PloneHotfix20200121/  a \ \ \ \ Products.PloneKeywordManager' $BUILDOUTCFG
+sed -i '/    Products.PloneHotfix20200121/  a \ \ \ \ plone.app.changeownership' $BUILDOUTCFG
+sed -i '/    Products.PloneHotfix20200121/  a \ \ \ \ eea.facetednavigation' $BUILDOUTCFG
+sed -i '/    Products.PloneHotfix20200121/  a \ \ \ \ plone.app.mosaic' $BUILDOUTCFG
+sed -i '/    Products.PloneHotfix20200121/  a \ \ \ \ collective.taxonomy' $BUILDOUTCFG
+sed -i '/    Products.PloneHotfix20200121/  a \ \ \ \ collective.collectionfilter' $BUILDOUTCFG
+sed -i '/    Products.PloneHotfix20200121/  a \ \ \ \ collective.lineage' $BUILDOUTCFG
+sed -i '/    Products.PloneHotfix20200121/  a \ \ \ \ collective.venue' $BUILDOUTCFG
+sed -i '/    Products.PloneHotfix20200121/  a \ \ \ \ collective.sidebar' $BUILDOUTCFG
+
+cd $BUILDOUTDIR
+# append pinned versions
+cat >> $BUILDOUTCFG << EOF
+
+# pinned versions from extra add-ons
+Products.PloneKeywordManager = 3.0.2
+collective.collectionfilter = 3.4.1
+collective.documentviewer = 6.0.0
+collective.easyform = 3.0.5
+collective.lineage = 2.3
+collective.pwexpiry = 0.15.1
+collective.sidebar = 1.4.0
+collective.taxonomy = 2.0.1
+collective.venue = 4.1
+eea.faceted.vocabularies = 6.9
+eea.facetednavigation = 14.2
+eea.jquery = 11.2
+node.ext.ldap = 1.0b12
+node.ext.ugm = 0.9.12
+pas.plugins.ldap = 1.8.0
+plone.app.changeownership = 1.0
+plone.app.jquery = 1.11.2
+plumber = 1.6
+pyasn1 = 0.4.8
+pyasn1-modules = 0.2.8
+python-ldap = 3.3.1
+repoze.catalog = 0.9.0
+yafowil = 2.3.3
+yafowil.plone = 4.0.0a3
+zope.index = 5.0.0
+
+# Required by:
+# yafowil.yaml==1.3.1
+PyYAML = 5.3.1
+
+# Required by:
+# node.ext.ldap==1.0b12
+argparse = 1.4.0
+
+# Required by:
+# node.ext.ldap==1.0b12
+# pas.plugins.ldap==1.8.0
+bda.cache = 1.3.0
+
+# Required by:
+# collective.venue==4.1
+collective.address = 1.6
+
+# Required by:
+# pas.plugins.ldap==1.8.0
+node = 0.9.25
+
+# Required by:
+# pas.plugins.ldap==1.8.0
+odict = 1.7.0
+
+# Required by:
+# node.ext.ldap==1.0b12
+passlib = 1.7.4
+
+# Required by:
+# collective.address==1.6
+pycountry = 20.7.3
+
+# Required by:
+# bda.cache==1.3.0
+python-memcached = 1.59
+
+# Required by:
+# pas.plugins.ldap==1.8.0
+yafowil.widget.array = 1.6.1
+
+# Required by:
+# pas.plugins.ldap==1.8.0
+yafowil.widget.dict = 1.8
+
+# Required by:
+# pas.plugins.ldap==1.8.0
+yafowil.yaml = 1.3.1
+EOF
+
+# rerun buildout to add new add-ons
+sudo -u plone_buildout bin/buildout
+
+# fix permissions
+cd $BUILDOUTDIR
+cd ..
+find . -type d -exec chmod g+rs {} ';'
+find . -type f -exec chmod g+r {} ';'
+
+# set up supervisor for starting Plone at boot time
+sudo cat > /etc/supervisor/conf.d/plone.conf << EOF
+[supervisord]
+user=root
+
+[program:zeoserver_zeoserver]
+command=/opt/plone/zeocluster/bin/zeoserver fg
+directory=/opt/plone/zeocluster
+redirect_stderr=false
+autostart=true
+autorestart=unexpected
+user=plone_daemon
+startsecs=1
+stopwaitsecs=10
+
+[program:zeoserver_zeoclient1]
+command=/opt/plone/zeocluster/bin/client1 console
+directory=/opt/plone/zeocluster
+redirect_stderr=false
+autostart=true
+autorestart=unexpected
+user=plone_daemon
+startsecs=1
+stopwaitsecs=10
+EOF
+
+# reload the configuration to start Plone
+supervisorctl reread
+supervisorctl reload

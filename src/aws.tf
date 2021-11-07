@@ -25,5 +25,9 @@ resource "aws_instance" "app_server" {
   tags = {
     Name = "Plone in a Box™"
   }
+
+  provisioner "remote-exec" {
+    script = "StackScript"
+  }
 }
 

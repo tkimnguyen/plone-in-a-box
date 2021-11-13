@@ -1,7 +1,7 @@
-Unreleased
-----------
+1.1 (2021-11-13)
+----------------
 
-- add initial AWS Terraform plan, update Linode StackScript with contents of provision_linode.sh, remove provision_linode.sh
+- updates for Plone 6 alpha 1, working on AWS and Linode)
   [tkimnguyen]
 
 

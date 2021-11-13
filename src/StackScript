@@ -3,148 +3,116 @@
 # update packages
 sudo apt update -y && sudo apt upgrade -y
 
-# install dependencies
-sudo apt install -y gcc libjpeg-dev python-dev python3-dev libxml2-dev libxslt1-dev libldap2-dev libsasl2-dev graphicsmagick poppler-utils pdftk libreoffice qpdf build-essential supervisor
+apt-get install -y curl gpg git nginx
 
-# get the Plone unified installer and run it
-wget https://launchpad.net/plone/5.2/5.2.2/+download/Plone-5.2.2-UnifiedInstaller.tgz
-tar xfz Plone-5.2.2-UnifiedInstaller.tgz
-cd Plone-5.2.2-UnifiedInstaller
-sudo ./install.sh --with-python=`which python3` --password=admin zeo
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-archive-keyring.gpg
 
-# add eggs to buildout
-export BUILDOUTDIR=/opt/plone/zeocluster
-export BUILDOUTCFG=/opt/plone/zeocluster/buildout.cfg
-sed -i '/    Products.PloneHotfix20200121/  a \ \ \ \ collective.documentviewer' $BUILDOUTCFG
-sed -i '/    Products.PloneHotfix20200121/  a \ \ \ \ collective.easyform' $BUILDOUTCFG
-sed -i '/    Products.PloneHotfix20200121/  a \ \ \ \ pas.plugins.ldap' $BUILDOUTCFG
-sed -i '/    Products.PloneHotfix20200121/  a \ \ \ \ collective.pwexpiry' $BUILDOUTCFG
-sed -i '/    Products.PloneHotfix20200121/  a \ \ \ \ Products.PloneKeywordManager' $BUILDOUTCFG
-sed -i '/    Products.PloneHotfix20200121/  a \ \ \ \ plone.app.changeownership' $BUILDOUTCFG
-sed -i '/    Products.PloneHotfix20200121/  a \ \ \ \ eea.facetednavigation' $BUILDOUTCFG
-sed -i '/    Products.PloneHotfix20200121/  a \ \ \ \ plone.app.mosaic' $BUILDOUTCFG
-sed -i '/    Products.PloneHotfix20200121/  a \ \ \ \ collective.taxonomy' $BUILDOUTCFG
-sed -i '/    Products.PloneHotfix20200121/  a \ \ \ \ collective.collectionfilter' $BUILDOUTCFG
-sed -i '/    Products.PloneHotfix20200121/  a \ \ \ \ collective.lineage' $BUILDOUTCFG
-sed -i '/    Products.PloneHotfix20200121/  a \ \ \ \ collective.venue' $BUILDOUTCFG
-sed -i '/    Products.PloneHotfix20200121/  a \ \ \ \ collective.sidebar' $BUILDOUTCFG
+echo   "deb [arch=amd64 signed-by=/usr/share/keyrings/docker-archive-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-cd $BUILDOUTDIR
-# append pinned versions
-cat >> $BUILDOUTCFG << EOF
+apt-get update
 
-# pinned versions from extra add-ons
-Products.PloneKeywordManager = 3.0.2
-collective.collectionfilter = 3.4.1
-collective.documentviewer = 6.0.0
-collective.easyform = 3.0.5
-collective.lineage = 2.3
-collective.pwexpiry = 0.15.1
-collective.sidebar = 1.4.0
-collective.taxonomy = 2.0.1
-collective.venue = 4.1
-eea.faceted.vocabularies = 6.9
-eea.facetednavigation = 14.2
-eea.jquery = 11.2
-node.ext.ldap = 1.0b12
-node.ext.ugm = 0.9.12
-pas.plugins.ldap = 1.8.0
-plone.app.changeownership = 1.0
-plone.app.jquery = 1.11.2
-plumber = 1.6
-pyasn1 = 0.4.8
-pyasn1-modules = 0.2.8
-python-ldap = 3.3.1
-repoze.catalog = 0.9.0
-yafowil = 2.3.3
-yafowil.plone = 4.0.0a3
-zope.index = 5.0.0
+apt-get install -y docker-ce docker-ce-cli containerd.io
 
-# Required by:
-# yafowil.yaml==1.3.1
-PyYAML = 5.3.1
+apt-get install -y docker-compose
 
-# Required by:
-# node.ext.ldap==1.0b12
-argparse = 1.4.0
+rm /etc/nginx/sites-enabled/default
 
-# Required by:
-# node.ext.ldap==1.0b12
-# pas.plugins.ldap==1.8.0
-bda.cache = 1.3.0
+cat <<EOT > /etc/nginx/conf.d/default.conf
+upstream backend {
+  server localhost:8080;
+}
+upstream frontend {
+  server localhost:3000;
+}
 
-# Required by:
-# collective.venue==4.1
-collective.address = 1.6
+server {
+  listen 80;
+  server_name  localhost;
 
-# Required by:
-# pas.plugins.ldap==1.8.0
-node = 0.9.25
+  location ~ /\+\+api\+\+(\$|/.*) {
+      rewrite ^/\+\+api\+\+(\$|/.*) /VirtualHostBase/http/\$host/Plone/++api++/VirtualHostRoot/\$1 break;
+      proxy_pass http://backend;
+  }
 
-# Required by:
-# pas.plugins.ldap==1.8.0
-odict = 1.7.0
+  location ~ / {
+      location ~* \.(js|jsx|css|less|swf|eot|ttf|otf|woff|woff2)\$ {
+          add_header Cache-Control "public";
+          expires +1y;
+          proxy_pass http://frontend;
+      }
+      location ~* static.*\.(ico|jpg|jpeg|png|gif|svg)\$ {
+          add_header Cache-Control "public";
+          expires +1y;
+          proxy_pass http://frontend;
+      }
 
-# Required by:
-# node.ext.ldap==1.0b12
-passlib = 1.7.4
+      location ~ /(@@download|@@images|@@ical_view) {
+          rewrite ^(.*) /VirtualHostBase/http/\$host/Plone/VirtualHostRoot\$1 break;
+          proxy_pass http://backend;
+          break;
+      }
 
-# Required by:
-# collective.address==1.6
-pycountry = 20.7.3
+      proxy_set_header        Host \$host;
+      proxy_set_header        X-Real-IP \$remote_addr;
+      proxy_set_header        X-Forwarded-For \$proxy_add_x_forwarded_for;
+      proxy_set_header        X-Forwarded-Proto \$scheme;
+#      proxy_redirect http:// https://;
+      proxy_pass http://frontend;
+  }
+}
+EOT
 
-# Required by:
-# bda.cache==1.3.0
-python-memcached = 1.59
+service nginx reload
 
-# Required by:
-# pas.plugins.ldap==1.8.0
-yafowil.widget.array = 1.6.1
+useradd -G docker -m plone
+echo plone:plone | chpasswd
 
-# Required by:
-# pas.plugins.ldap==1.8.0
-yafowil.widget.dict = 1.8
+cat << EOT > /home/plone/docker-compose.yml
+version: "3"
+services:
 
-# Required by:
-# pas.plugins.ldap==1.8.0
-yafowil.yaml = 1.3.1
-EOF
+  frontend:
+    image: plone/plone-frontend:14.0.0-alpha-node14
+    environment:
+      RAZZLE_INTERNAL_API_PATH: http://backend:8080/Plone
+      RAZZLE_DEV_PROXY_API_PATH: http://backend:8080/Plone
+    restart: always
+    ports:
+    - "3000:3000"
+    depends_on:
+      - backend
 
-# rerun buildout to add new add-ons
-sudo -u plone_buildout bin/buildout
+  backend:
+    image: plone/plone-backend:6.0-dev-python39
+    environment:
+      RELSTORAGE_DSN: "dbname='plone' user='plone' host='db' password='plone'"
+    restart: always
+    ports:
+    - "8080:8080"
+    depends_on:
+      - db
 
-# fix permissions
-cd $BUILDOUTDIR
-cd ..
-find . -type d -exec chmod g+rs {} ';'
-find . -type f -exec chmod g+r {} ';'
+  db:
+    image: postgres
+    environment:
+      POSTGRES_USER: plone
+      POSTGRES_PASSWORD: plone
+      POSTGRES_DB: plone
+    restart: always
+    volumes:
+      - data:/var/lib/postgresql/data
+    ports:
+    - "5432:5432"
 
-# set up supervisor for starting Plone at boot time
-sudo cat > /etc/supervisor/conf.d/plone.conf << EOF
-[supervisord]
-user=root
+volumes:
+  data: {}
+EOT
+chown plone:plone /home/plone/docker-compose.yml
+cd /home/plone && docker-compose up -d
 
-[program:zeoserver_zeoserver]
-command=/opt/plone/zeocluster/bin/zeoserver fg
-directory=/opt/plone/zeocluster
-redirect_stderr=false
-autostart=true
-autorestart=unexpected
-user=plone_daemon
-startsecs=1
-stopwaitsecs=10
+sleep 120
 
-[program:zeoserver_zeoclient1]
-command=/opt/plone/zeocluster/bin/client1 console
-directory=/opt/plone/zeocluster
-redirect_stderr=false
-autostart=true
-autorestart=unexpected
-user=plone_daemon
-startsecs=1
-stopwaitsecs=10
-EOF
+# create the default Plone site
+curl --user admin:admin 'http://localhost:8080/@@plone-addsite' -X POST -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8' -H 'Accept-Language: en-US,en;q=0.5' --compressed -H 'Content-Type: application/x-www-form-urlencoded' -H 'Connection: keep-alive' -H 'Upgrade-Insecure-Requests: 1' -H 'Sec-GPC: 1' -H 'Pragma: no-cache' -H 'Cache-Control: no-cache' --data-raw 'site_id=Plone&title=Site&default_language=en-us&portal_timezone=America%2FChicago&setup_content%3Aboolean=on&extension_ids%3Alist=plonetheme.barceloneta%3Adefault&extension_ids%3Alist=plone.app.caching%3Adefault&extension_ids%3Alist=plone.volto%3Adefault-homepage&extension_ids%3Alist=plone.volto%3Adefault&form.submitted%3Aboolean=True'
 
-# reload the configuration to start Plone
-supervisorctl reread
-supervisorctl reload
+service nginx reload

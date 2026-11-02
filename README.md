@@ -15,7 +15,8 @@ Volto 19; switch to `6.2` / `19` once Volto 19 has a final release.
 ## Supported cloud providers
 
 * **Linode**: [`src/StackScript`](src/StackScript), published as the Community StackScript **Plone in a Box**
-* **Amazon AWS**: [`src/aws/`](src/aws/main.tf) (Terraform), which runs the same script as EC2 user data
+* **Amazon AWS**: a **Launch Stack** button (CloudFormation, no command line), or [`src/aws/`](src/aws/main.tf) (Terraform);
+  both run the same script as EC2 user data
 * **DigitalOcean**: [`src/digitalocean/`](src/digitalocean/main.tf) (Terraform), which runs the same script as Droplet user data
 
 Use a server with at least 2 GB of RAM (Linode 2 GB, AWS `t3.small`, DigitalOcean `s-1vcpu-2gb`).
@@ -35,6 +36,16 @@ Cloud Manager requires choosing a firewall: pick **No firewall** if offered, or 
 site. The server also runs its own firewall (ufw) that allows only those ports.
 
 ### AWS
+
+**No command line:** sign in to the AWS console, then click
+
+[![Launch Stack](https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png)](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https%3A%2F%2Fplone-in-a-box-templates.s3.us-east-1.amazonaws.com%2Flatest%2Fcloudformation.yaml&stackName=plone-in-a-box)
+
+Enter an admin password, click **Create stack**, and when the stack shows `CREATE_COMPLETE` (a minute or two), open
+the **SiteURL** on its **Outputs** tab to watch setup progress. It opens in N. Virginia (us-east-1); to use another
+region, switch it at the top right of that page first.
+
+**With Terraform:**
 
 ```
 cd src/aws

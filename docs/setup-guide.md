@@ -42,9 +42,30 @@ Once the Linode shows *Running*, open `http://<linode-ip>` in your browser. With
 skip to step 2 of [After provisioning](#after-provisioning). Otherwise continue with step 1 using `ssh root@<linode-ip>`.
 If the page says **"Setup didn't finish"**, see [Troubleshooting](#troubleshooting).
 
-## Option B: Amazon AWS (Terraform)
+## Option B: Amazon AWS
 
-### One-time setup
+### With the Launch Stack button (no command line)
+
+1. Sign in to the [AWS console](https://console.aws.amazon.com/). A new AWS account works as is.
+2. Click [**Launch Stack**](https://us-east-1.console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?templateURL=https%3A%2F%2Fplone-in-a-box-templates.s3.us-east-1.amazonaws.com%2Flatest%2Fcloudformation.yaml&stackName=plone-in-a-box). It opens CloudFormation's **Quick create stack** page in N. Virginia
+   (us-east-1); to use another region, switch it at the top right of that page before continuing.
+3. Fill in the form:
+   * **Plone admin password** (required, at least 12 characters).
+   * **Site time zone**, **Server size** (default `t3.small`, the smallest that runs Plone well) and **Disk size**.
+   * **Domain name** and **Email for Let's Encrypt**, if you want HTTPS and your domain's DNS already points to the
+     server. You can also add HTTPS later.
+   * **SSH key pair** and **Allow SSH from**: optional, only if you want to log in to the server.
+4. Click **Create stack**. After a minute or two the stack shows `CREATE_COMPLETE`.
+5. Open the **Outputs** tab and click the **SiteURL**. You'll see the setup progress page, which turns into your
+   Plone site when it's ready (about 10 minutes). Log in as `admin` with the password you chose.
+
+The stack creates a server, a firewall (security group) allowing ports 22, 80 and 443, and a fixed IP address (Elastic
+IP), so the address stays the same if you stop and start the server. **PublicIP** on the Outputs tab is the address to
+point your domain at.
+
+### With Terraform
+
+#### One-time setup
 
 1. Install Terraform and the AWS CLI. On a Mac:
    ```
@@ -60,7 +81,7 @@ If the page says **"Setup didn't finish"**, see [Troubleshooting](#troubleshooti
 3. Run `aws configure`, paste the keys, and set the region (for example `us-east-1`). Check it with
    `aws sts get-caller-identity`.
 
-### Deploy
+#### Deploy
 
 ```
 git clone https://github.com/tkimnguyen/plone-in-a-box
@@ -194,6 +215,8 @@ sudo certbot --nginx --redirect -d <domain> -m <your-email> --agree-tos
 ## Removing the box
 
 * **Linode**: delete the Linode in Cloud Manager.
+* **AWS** with the Launch Stack button: in CloudFormation, select the `plone-in-a-box` stack and click **Delete**.
+  That removes the server, its disk, the firewall and the fixed IP address.
 * **AWS** or **DigitalOcean** with Terraform: `terraform destroy` from `src/aws/` or `src/digitalocean/`, with the
   same `-var` options (or `terraform.tfvars`) and, for DigitalOcean, the same `DIGITALOCEAN_TOKEN`.
 * **DigitalOcean** without Terraform: destroy the Droplet in the control panel.
@@ -208,6 +231,7 @@ sudo certbot --nginx --redirect -d <domain> -m <your-email> --agree-tos
 | The page says "Setup didn't finish" | It shows which step failed. Usually a temporary download problem: delete the server and deploy again. To see details, log in as root and read `/var/log/plone-in-a-box.log`. |
 | No setup page, or no `/root/plone-credentials.txt` after 15 minutes | Read `/var/log/plone-in-a-box.log` (or, if it's missing, `/var/log/cloud-init-output.log` on AWS and DigitalOcean), and check `sudo docker compose --project-directory /opt/plone ps`. |
 | Terraform: `Value for undeclared variable` | You're running an old configuration. `git pull`, then `terraform init -upgrade` in `src/aws/`. |
+| AWS Launch Stack: `No default VPC for this user` or `VPCIdNotSpecified` | The stack uses the region's default VPC. Switch to a region that has one (new accounts have one in every region), or create it under **VPC → Your VPCs → Actions → Create default VPC**. |
 | DigitalOcean: `SSH Key is already in use on your account` | Pass `-var 'ssh_key_fingerprint=...'` with the existing key's fingerprint. |
 | DigitalOcean: `Unable to authenticate you` | `DIGITALOCEAN_TOKEN` isn't set in this terminal, or the token lacks write scope. |
 | DigitalOcean: `You are missing the required permission tag:create` (or another `...:create`) | The token has custom scopes. Create one with **Full Access**, export it, and run `terraform apply` again. |

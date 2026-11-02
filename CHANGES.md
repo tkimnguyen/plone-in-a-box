@@ -1,3 +1,17 @@
+2.3 (unreleased)
+----------------
+
+- AWS without the command line: a Launch Stack button (CloudFormation template
+  src/aws/cloudformation.yaml) with a form for the admin password, server size,
+  domain and SSH options. It creates the server, a security group and an Elastic IP,
+  and runs the same provisioning script. The template is generated from
+  src/aws/cloudformation.in.yaml by scripts/build-cloudformation.py, which embeds the
+  script compressed; CI checks it's up to date and runs cfn-lint.
+- Fix: AWS Terraform deploys failed with 2.2, because the script grew past EC2's
+  16 KB user data limit. The user data is now gzip-compressed (base64gzip).
+  [tkimnguyen]
+
+
 2.2 (2026-11-01)
 ----------------
 

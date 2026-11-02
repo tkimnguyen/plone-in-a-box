@@ -1,0 +1,233 @@
+# GENERATED FILE - do not edit. Edit src/aws/cloudformation.in.yaml and run
+#   python3 scripts/build-cloudformation.py
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  Plone in a Box: one Ubuntu 24.04 server running Plone 6 with the Volto front end
+  and PostgreSQL behind nginx. Open the SiteURL output after creating the stack to
+  watch setup progress (about 10 minutes). https://github.com/tkimnguyen/plone-in-a-box
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Your Plone site
+        Parameters:
+          - AdminPassword
+          - SiteTimezone
+      - Label:
+          default: Server
+        Parameters:
+          - InstanceType
+          - VolumeSize
+      - Label:
+          default: HTTPS (optional)
+        Parameters:
+          - Domain
+          - LetsEncryptEmail
+      - Label:
+          default: SSH access (optional)
+        Parameters:
+          - KeyName
+          - SSHLocation
+      - Label:
+          default: Advanced
+        Parameters:
+          - PloneVersion
+          - VoltoVersion
+          - LatestAmiId
+    ParameterLabels:
+      AdminPassword:
+        default: Plone admin password
+      SiteTimezone:
+        default: Site time zone
+      InstanceType:
+        default: Server size
+      VolumeSize:
+        default: Disk size (GB)
+      Domain:
+        default: Domain name
+      LetsEncryptEmail:
+        default: Email for Let's Encrypt
+      KeyName:
+        default: SSH key pair
+      SSHLocation:
+        default: Allow SSH from
+      PloneVersion:
+        default: Plone backend image tag
+      VoltoVersion:
+        default: Volto frontend image tag
+      LatestAmiId:
+        default: Ubuntu image
+
+Parameters:
+  AdminPassword:
+    Type: String
+    NoEcho: true
+    MinLength: 12
+    Description: >-
+      Password for the "admin" user of your Plone site, at least 12 characters.
+      Store it in a password manager. (It is passed to the server in its user data.)
+  SiteTimezone:
+    Type: String
+    Default: UTC
+    Description: Time zone for the Plone site, for example America/Chicago.
+  InstanceType:
+    Type: String
+    Default: t3.small
+    AllowedValues:
+      - t3.small
+      - t3.medium
+      - t3.large
+      - t3a.small
+      - t3a.medium
+      - t3a.large
+    Description: >-
+      t3.small (2 GB of memory) is the smallest size that runs Plone well. Larger sizes cost more.
+  VolumeSize:
+    Type: Number
+    Default: 20
+    MinValue: 10
+    MaxValue: 1000
+    Description: Size of the server's disk in GB.
+  Domain:
+    Type: String
+    Default: ""
+    Description: >-
+      Optional. A domain name for the site, for example plone.example.org. For HTTPS, its DNS must
+      already point at the server's address; otherwise leave this empty and add HTTPS later.
+  LetsEncryptEmail:
+    Type: String
+    Default: ""
+    Description: Required for HTTPS. Let's Encrypt sends certificate notices here.
+  KeyName:
+    Type: String
+    Default: ""
+    Description: >-
+      Optional. The name of an existing EC2 key pair, if you want to log in to the server over SSH.
+      Not needed to use the site.
+  SSHLocation:
+    Type: String
+    Default: 0.0.0.0/0
+    AllowedPattern: '^(\d{1,3}\.){3}\d{1,3}/\d{1,2}$'
+    ConstraintDescription: Must be an IPv4 address range such as 203.0.113.7/32.
+    Description: Addresses allowed to connect over SSH (port 22). Use your own IP followed by /32 to restrict it.
+  PloneVersion:
+    Type: String
+    Default: "6.1"
+    Description: plone/plone-backend Docker image tag.
+  VoltoVersion:
+    Type: String
+    Default: "18"
+    Description: plone/plone-frontend Docker image tag.
+  LatestAmiId:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id
+    Description: Latest Ubuntu 24.04 LTS image, looked up automatically. Leave as is.
+
+Conditions:
+  HasKeyName: !Not [!Equals [!Ref KeyName, ""]]
+  HasDomain: !Not [!Equals [!Ref Domain, ""]]
+
+Resources:
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Plone in a Box: SSH, HTTP and HTTPS"
+      SecurityGroupIngress:
+        - Description: SSH
+          IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref SSHLocation
+        - Description: HTTP
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - Description: HTTP (IPv6)
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIpv6: ::/0
+        - Description: HTTPS
+          IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+        - Description: HTTPS (IPv6)
+          IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIpv6: ::/0
+
+  Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref LatestAmiId
+      InstanceType: !Ref InstanceType
+      KeyName: !If [HasKeyName, !Ref KeyName, !Ref AWS::NoValue]
+      SecurityGroupIds:
+        - !GetAtt SecurityGroup.GroupId
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: !Ref VolumeSize
+            VolumeType: gp3
+            Encrypted: true
+      MetadataOptions:
+        HttpTokens: required
+      Tags:
+        - Key: Name
+          Value: !Ref AWS::StackName
+      # The settings are passed base64-encoded so that any characters survive the
+      # shell; the provisioning script (src/StackScript) is embedded compressed,
+      # because EC2 limits user data to 16 KB.
+      UserData:
+        Fn::Base64: !Sub
+          - |
+            #!/bin/bash
+            set -euo pipefail
+            d() { echo "$1" | base64 -d; }
+            ADMIN_PASSWORD="$(d '${AdminPasswordB64}')"
+            DOMAIN="$(d '${DomainB64}')"
+            LETSENCRYPT_EMAIL="$(d '${EmailB64}')"
+            SITE_TIMEZONE="$(d '${TimezoneB64}')"
+            PLONE_VERSION="$(d '${PloneB64}')"
+            VOLTO_VERSION="$(d '${VoltoB64}')"
+            export ADMIN_PASSWORD DOMAIN LETSENCRYPT_EMAIL SITE_TIMEZONE PLONE_VERSION VOLTO_VERSION
+            echo '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' | base64 -d | gunzip > /root/plone-in-a-box-setup.sh
+            exec bash /root/plone-in-a-box-setup.sh
+          - AdminPasswordB64: !Base64 {Ref: AdminPassword}
+            DomainB64: !Base64 {Ref: Domain}
+            EmailB64: !Base64 {Ref: LetsEncryptEmail}
+            TimezoneB64: !Base64 {Ref: SiteTimezone}
+            PloneB64: !Base64 {Ref: PloneVersion}
+            VoltoB64: !Base64 {Ref: VoltoVersion}
+
+  # A fixed address, so the site keeps the same IP after the server is stopped
+  # and started, and DNS for a domain only needs setting once.
+  ElasticIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      InstanceId: !Ref Instance
+      Tags:
+        - Key: Name
+          Value: !Ref AWS::StackName
+
+Outputs:
+  SiteURL:
+    Description: >-
+      Open this right away to watch setup progress; it turns into your Plone site when ready
+      (about 10 minutes). Log in as "admin" with the password you chose.
+    Value: !If
+      - HasDomain
+      - !Sub "http://${Domain}"
+      - !Sub "http://${ElasticIP.PublicIp}"
+  PublicIP:
+    Description: The server's fixed public IP address. Point your domain's DNS here.
+    Value: !GetAtt ElasticIP.PublicIp
+  SSHCommand:
+    Condition: HasKeyName
+    Description: Log in to the server (needs the key pair you chose).
+    Value: !Sub "ssh ubuntu@${ElasticIP.PublicIp}"

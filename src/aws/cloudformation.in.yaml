@@ -1,0 +1,234 @@
+# Source for src/aws/cloudformation.yaml. Edit this file, then run
+#   python3 scripts/build-cloudformation.py
+# which embeds src/StackScript (compressed) where @@STACKSCRIPT_GZIP_B64@@ appears.
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >-
+  Plone in a Box: one Ubuntu 24.04 server running Plone 6 with the Volto front end
+  and PostgreSQL behind nginx. Open the SiteURL output after creating the stack to
+  watch setup progress (about 10 minutes). https://github.com/tkimnguyen/plone-in-a-box
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+      - Label:
+          default: Your Plone site
+        Parameters:
+          - AdminPassword
+          - SiteTimezone
+      - Label:
+          default: Server
+        Parameters:
+          - InstanceType
+          - VolumeSize
+      - Label:
+          default: HTTPS (optional)
+        Parameters:
+          - Domain
+          - LetsEncryptEmail
+      - Label:
+          default: SSH access (optional)
+        Parameters:
+          - KeyName
+          - SSHLocation
+      - Label:
+          default: Advanced
+        Parameters:
+          - PloneVersion
+          - VoltoVersion
+          - LatestAmiId
+    ParameterLabels:
+      AdminPassword:
+        default: Plone admin password
+      SiteTimezone:
+        default: Site time zone
+      InstanceType:
+        default: Server size
+      VolumeSize:
+        default: Disk size (GB)
+      Domain:
+        default: Domain name
+      LetsEncryptEmail:
+        default: Email for Let's Encrypt
+      KeyName:
+        default: SSH key pair
+      SSHLocation:
+        default: Allow SSH from
+      PloneVersion:
+        default: Plone backend image tag
+      VoltoVersion:
+        default: Volto frontend image tag
+      LatestAmiId:
+        default: Ubuntu image
+
+Parameters:
+  AdminPassword:
+    Type: String
+    NoEcho: true
+    MinLength: 12
+    Description: >-
+      Password for the "admin" user of your Plone site, at least 12 characters.
+      Store it in a password manager. (It is passed to the server in its user data.)
+  SiteTimezone:
+    Type: String
+    Default: UTC
+    Description: Time zone for the Plone site, for example America/Chicago.
+  InstanceType:
+    Type: String
+    Default: t3.small
+    AllowedValues:
+      - t3.small
+      - t3.medium
+      - t3.large
+      - t3a.small
+      - t3a.medium
+      - t3a.large
+    Description: >-
+      t3.small (2 GB of memory) is the smallest size that runs Plone well. Larger sizes cost more.
+  VolumeSize:
+    Type: Number
+    Default: 20
+    MinValue: 10
+    MaxValue: 1000
+    Description: Size of the server's disk in GB.
+  Domain:
+    Type: String
+    Default: ""
+    Description: >-
+      Optional. A domain name for the site, for example plone.example.org. For HTTPS, its DNS must
+      already point at the server's address; otherwise leave this empty and add HTTPS later.
+  LetsEncryptEmail:
+    Type: String
+    Default: ""
+    Description: Required for HTTPS. Let's Encrypt sends certificate notices here.
+  KeyName:
+    Type: String
+    Default: ""
+    Description: >-
+      Optional. The name of an existing EC2 key pair, if you want to log in to the server over SSH.
+      Not needed to use the site.
+  SSHLocation:
+    Type: String
+    Default: 0.0.0.0/0
+    AllowedPattern: '^(\d{1,3}\.){3}\d{1,3}/\d{1,2}$'
+    ConstraintDescription: Must be an IPv4 address range such as 203.0.113.7/32.
+    Description: Addresses allowed to connect over SSH (port 22). Use your own IP followed by /32 to restrict it.
+  PloneVersion:
+    Type: String
+    Default: "6.1"
+    Description: plone/plone-backend Docker image tag.
+  VoltoVersion:
+    Type: String
+    Default: "18"
+    Description: plone/plone-frontend Docker image tag.
+  LatestAmiId:
+    Type: AWS::SSM::Parameter::Value<AWS::EC2::Image::Id>
+    Default: /aws/service/canonical/ubuntu/server/24.04/stable/current/amd64/hvm/ebs-gp3/ami-id
+    Description: Latest Ubuntu 24.04 LTS image, looked up automatically. Leave as is.
+
+Conditions:
+  HasKeyName: !Not [!Equals [!Ref KeyName, ""]]
+  HasDomain: !Not [!Equals [!Ref Domain, ""]]
+
+Resources:
+  SecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Plone in a Box: SSH, HTTP and HTTPS"
+      SecurityGroupIngress:
+        - Description: SSH
+          IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: !Ref SSHLocation
+        - Description: HTTP
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - Description: HTTP (IPv6)
+          IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIpv6: ::/0
+        - Description: HTTPS
+          IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: 0.0.0.0/0
+        - Description: HTTPS (IPv6)
+          IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIpv6: ::/0
+
+  Instance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref LatestAmiId
+      InstanceType: !Ref InstanceType
+      KeyName: !If [HasKeyName, !Ref KeyName, !Ref AWS::NoValue]
+      SecurityGroupIds:
+        - !GetAtt SecurityGroup.GroupId
+      BlockDeviceMappings:
+        - DeviceName: /dev/sda1
+          Ebs:
+            VolumeSize: !Ref VolumeSize
+            VolumeType: gp3
+            Encrypted: true
+      MetadataOptions:
+        HttpTokens: required
+      Tags:
+        - Key: Name
+          Value: !Ref AWS::StackName
+      # The settings are passed base64-encoded so that any characters survive the
+      # shell; the provisioning script (src/StackScript) is embedded compressed,
+      # because EC2 limits user data to 16 KB.
+      UserData:
+        Fn::Base64: !Sub
+          - |
+            #!/bin/bash
+            set -euo pipefail
+            d() { echo "$1" | base64 -d; }
+            ADMIN_PASSWORD="$(d '${AdminPasswordB64}')"
+            DOMAIN="$(d '${DomainB64}')"
+            LETSENCRYPT_EMAIL="$(d '${EmailB64}')"
+            SITE_TIMEZONE="$(d '${TimezoneB64}')"
+            PLONE_VERSION="$(d '${PloneB64}')"
+            VOLTO_VERSION="$(d '${VoltoB64}')"
+            export ADMIN_PASSWORD DOMAIN LETSENCRYPT_EMAIL SITE_TIMEZONE PLONE_VERSION VOLTO_VERSION
+            echo '@@STACKSCRIPT_GZIP_B64@@' | base64 -d | gunzip > /root/plone-in-a-box-setup.sh
+            exec bash /root/plone-in-a-box-setup.sh
+          - AdminPasswordB64: !Base64 {Ref: AdminPassword}
+            DomainB64: !Base64 {Ref: Domain}
+            EmailB64: !Base64 {Ref: LetsEncryptEmail}
+            TimezoneB64: !Base64 {Ref: SiteTimezone}
+            PloneB64: !Base64 {Ref: PloneVersion}
+            VoltoB64: !Base64 {Ref: VoltoVersion}
+
+  # A fixed address, so the site keeps the same IP after the server is stopped
+  # and started, and DNS for a domain only needs setting once.
+  ElasticIP:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: vpc
+      InstanceId: !Ref Instance
+      Tags:
+        - Key: Name
+          Value: !Ref AWS::StackName
+
+Outputs:
+  SiteURL:
+    Description: >-
+      Open this right away to watch setup progress; it turns into your Plone site when ready
+      (about 10 minutes). Log in as "admin" with the password you chose.
+    Value: !If
+      - HasDomain
+      - !Sub "http://${Domain}"
+      - !Sub "http://${ElasticIP.PublicIp}"
+  PublicIP:
+    Description: The server's fixed public IP address. Point your domain's DNS here.
+    Value: !GetAtt ElasticIP.PublicIp
+  SSHCommand:
+    Condition: HasKeyName
+    Description: Log in to the server (needs the key pair you chose).
+    Value: !Sub "ssh ubuntu@${ElasticIP.PublicIp}"

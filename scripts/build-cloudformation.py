@@ -12,6 +12,7 @@ Usage:
 
 import base64
 import gzip
+import re
 import sys
 from pathlib import Path
 
@@ -30,7 +31,7 @@ HEADER = (
 
 def build() -> str:
     script = SCRIPT.read_bytes()
-    # mtime=0 keeps the output identical between runs, so CI can compare it.
+    # mtime=0 keeps the output stable between runs on the same machine.
     packed = base64.b64encode(gzip.compress(script, compresslevel=9, mtime=0)).decode("ascii")
 
     # Drop the source file's own header comment, which mentions the placeholder.
@@ -49,16 +50,36 @@ def build() -> str:
     return HEADER + body.replace(PLACEHOLDER, packed)
 
 
+def is_up_to_date(current: str, expected: str) -> bool:
+    """Compare templates by their decompressed embedded script and the rest of
+    the text, because gzip output can differ between zlib versions."""
+    pattern = re.compile(r"echo '([A-Za-z0-9+/=]+)' \| base64 -d \| gunzip")
+    found_current, found_expected = pattern.search(current), pattern.search(expected)
+    if not found_current or not found_expected:
+        return False
+
+    def unpack(match):
+        return gzip.decompress(base64.b64decode(match.group(1)))
+
+    if unpack(found_current) != unpack(found_expected):
+        return False
+    strip = lambda text, m: text[: m.start(1)] + PLACEHOLDER + text[m.end(1):]
+    return strip(current, found_current) == strip(expected, found_expected)
+
+
 def main() -> None:
     output = build()
     if "--check" in sys.argv:
         current = TARGET.read_text() if TARGET.exists() else ""
-        if current != output:
+        if not is_up_to_date(current, output):
             sys.exit(
                 f"{TARGET.relative_to(ROOT)} is out of date. "
                 "Run: python3 scripts/build-cloudformation.py"
             )
         print(f"{TARGET.relative_to(ROOT)} is up to date")
+        return
+    if TARGET.exists() and is_up_to_date(TARGET.read_text(), output):
+        print(f"{TARGET.relative_to(ROOT)} is already up to date")
         return
     TARGET.write_text(output)
     print(f"Wrote {TARGET.relative_to(ROOT)}")

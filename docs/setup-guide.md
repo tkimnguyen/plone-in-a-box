@@ -3,7 +3,7 @@
 This guide takes you from a cloud account to a running Plone 6 site, on Linode, Amazon AWS or DigitalOcean. Allow about 20 minutes,
 most of it waiting for the server to provision.
 
-What you get: one Ubuntu 24.04 server running Plone 6.1 (backend), Volto 18 (the React front end) and PostgreSQL in
+What you get: one Ubuntu 24.04 server running Plone 6.2 (backend), Volto 19 (the React front end) and PostgreSQL in
 Docker, behind nginx. Only SSH (22), HTTP (80) and HTTPS (443) are open to the internet. You choose the Plone `admin`
 password when deploying, or one is generated for you; there is no `admin`/`admin` login.
 
@@ -27,7 +27,7 @@ password when deploying, or one is generated for you; there is no `admin`/`admin
      empty (or it's too short), a password is generated and saved on the server.
    * **Domain name** and **Email for Lets Encrypt**: both are needed for HTTPS.
    * **Site time zone**, for example `America/Chicago` (default `UTC`).
-   * **Plone backend image tag** and **Volto frontend image tag** (defaults `6.1` and `18`).
+   * **Plone backend image tag** and **Volto frontend image tag** (defaults `6.2` and `19`).
 4. Choose **Ubuntu 24.04 LTS** as the image, a region, and a **2 GB** (or larger) plan.
 5. Set a root password, add your **SSH key**, and click **Create Linode**.
 

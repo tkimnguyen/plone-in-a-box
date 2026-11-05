@@ -210,7 +210,7 @@ sudo certbot --nginx --redirect -d <domain> -m <your-email> --agree-tos
 | Problem | Fix |
 | --- | --- |
 | `ssh: connect ... Operation timed out` on Linode | A Cloud Firewall is blocking port 22. Allow TCP 22, 80, 443, or detach it. |
-| Forgot the admin password | Log in to the server as root (SSH, or your provider's console: Linode **Launch LISH Console**, DigitalOcean **Recovery Console**) and run `sudo plone-reset-admin-password`. Forgot the root password too? On Linode, power off and use **Reset Root Password**; on DigitalOcean, **Access → Reset root password**. |
+| Forgot the admin password | Log in to the server as root (SSH, or your provider's console: Linode **Launch LISH Console**, DigitalOcean **Access → Launch Droplet Console**, which needs no password) and run `sudo plone-reset-admin-password`, or `cat /root/plone-credentials.txt` if a password was generated and you never read it. Forgot the root password too? On Linode, power off and use **Reset Root Password**; on DigitalOcean, **Access → Reset root password**. |
 | The page says "Setup didn't finish" | It shows which step failed. Usually a temporary download problem: delete the server and deploy again. To see details, log in as root and read `/var/log/plone-in-a-box.log`. |
 | No setup page, or no `/root/plone-credentials.txt` after 15 minutes | Read `/var/log/plone-in-a-box.log` (or, if it's missing, `/var/log/cloud-init-output.log` on AWS and DigitalOcean), and check `sudo docker compose --project-directory /opt/plone ps`. |
 | Terraform: `Value for undeclared variable` | You're running an old configuration. `git pull`, then `terraform init -upgrade` in `src/aws/`. |

@@ -1,5 +1,18 @@
 # TODO
 
+## Move to Ubuntu 26.04 LTS
+
+- [ ] Ubuntu 26.04 LTS ("Resolute Raccoon") was released on 2026-04-23 (26.04.1 is out), supported until
+  2031-05. Plone in a Box targets 24.04, which is supported until 2029-05. To switch:
+  - `src/aws/main.tf`: change the AMI name filter (`ubuntu-noble-24.04-amd64-server-*`) to the 26.04 image
+    name, and check the `hvm-ssd-gp3` path still matches Canonical's naming.
+  - `src/digitalocean/main.tf`: change `image` from `ubuntu-24-04-x64` to the 26.04 slug.
+  - Linode: add Ubuntu 26.04 to the public StackScript's Target Images.
+  - `src/StackScript`: update "Tested target", and check the Docker install, nginx, ufw, certbot and the
+    progress page on 26.04.
+  - Update the README, setup guide (including the DigitalOcean launcher instructions) and the launcher's comment.
+  - Test a fresh deploy on each provider. Decide whether to keep 24.04 working too.
+
 ## Clean up old images and snapshots
 
 - [ ] Check the AWS and DigitalOcean accounts for images or snapshots used with the previous version of

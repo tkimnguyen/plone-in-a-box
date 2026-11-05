@@ -12,9 +12,10 @@ password when deploying, or one is generated for you; there is no `admin`/`admin
 * **An SSH key.** On a Mac or Linux, check with `ls ~/.ssh/*.pub`. If nothing is listed, create one with
   `ssh-keygen -t ed25519`.
 * **Server size.** Plone, Volto and PostgreSQL together need **at least 2 GB of RAM** on Linode (2 GB) and AWS
-  (`t3.small`). On DigitalOcean, a 1 GB Droplet (`s-1vcpu-1gb`) is enough for a small site: in testing, setup
-  took about 7 minutes and the site settled at about 730 MB of RAM, using about 100 MB of the swap that's added
-  automatically on small servers. Choose 2 GB or more for a busier site.
+  (`t3.small`). On DigitalOcean, a 1 GB Droplet (`s-1vcpu-1gb`) is enough for a small site. In testing with
+  Plone 6.2 and Volto 19, about 360 MB of the site's memory moved to the swap that's added automatically on
+  small servers. Editing and images worked normally, but the first page after an idle spell can be a little slower
+  while it's read back from swap. Choose 2 GB or more for a busier site.
 * **A domain name (optional).** For HTTPS, create a DNS `A` record pointing at the server's IP address *before*
   provisioning, or add HTTPS later (see [Adding HTTPS later](#adding-https-later)).
 

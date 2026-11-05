@@ -11,6 +11,16 @@ New servers come up with Ubuntu updates still pending and "System restart requir
 - [ ] Setup guide: tell people to run `sudo apt update && sudo apt full-upgrade -y` and `sudo reboot` now and
   then (the site is down for a minute or two), and not to run `do-release-upgrade`.
 
+## Enough swap on 1 GB Linodes
+
+`src/StackScript` adds a 2 GB swap file only when the server has no swap at all. Linode servers come with a 512 MB
+swap disk, so a 1 GB Linode never gets the swap file: in testing (Plone 6.2 / Volto 19, idle) it had about 424 MB of
+RAM and 206 MB of swap free, versus about 2.1 GB of headroom on a 1 GB DigitalOcean Droplet with the swap file.
+
+- [ ] Add the swap file whenever RAM plus existing swap is under about 3 GB, not only when there's no swap.
+- [ ] Test on a 1 GB Linode (Nanode) and check `free -m` shows the extra swap; then the docs could say 1 GB works
+  on Linode too.
+
 ## Move to Ubuntu 26.04 LTS
 
 - [ ] Ubuntu 26.04 LTS ("Resolute Raccoon") was released on 2026-04-23 (26.04.1 is out), supported until

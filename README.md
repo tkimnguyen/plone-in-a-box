@@ -62,8 +62,12 @@ terraform apply -var 'ssh_public_key_path=~/.ssh/id_ed25519.pub'
 ```
 
 If your SSH key is already in your DigitalOcean account, pass `-var 'ssh_key_fingerprint=<fingerprint>'` instead.
-The Droplet gets a DigitalOcean Cloud Firewall allowing only ports 22, 80 and 443. Without Terraform, you can also
-paste `src/StackScript` into **Advanced Options → Add initialization scripts** when creating an Ubuntu 24.04 Droplet.
+The Droplet gets a DigitalOcean Cloud Firewall allowing only ports 22, 80 and 443.
+
+Without Terraform or a command line: when creating an Ubuntu 24.04 Droplet in the control panel, paste
+[`src/digitalocean/user-data.sh`](src/digitalocean/user-data.sh) into **Advanced Options → Add initialization
+scripts** and fill in the settings at its top (admin password, domain, time zone, versions). Then open the
+Droplet's address to watch the setup progress page.
 
 ### After provisioning
 

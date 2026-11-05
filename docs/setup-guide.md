@@ -122,16 +122,17 @@ Open the `site_url` to watch the setup progress page (or follow `ssh root@<publi
 
 ### Without Terraform
 
+No command line is needed if you choose the admin password here.
+
 1. **Create → Droplets**, choose **Ubuntu 24.04 (LTS) x64**, a 2 GB size, and your SSH key.
 2. Under **Advanced Options**, check **Add initialization scripts** and paste the contents of
-   [`src/StackScript`](https://raw.githubusercontent.com/tkimnguyen/plone-in-a-box/main/src/StackScript). To set
-   options, add lines like these right after the first line (`#!/bin/bash`):
-   ```
-   export DOMAIN="plone.example.org"
-   export LETSENCRYPT_EMAIL="you@example.org"
-   export SITE_TIMEZONE="America/Chicago"
-   ```
-3. Create the Droplet. If you add a Cloud Firewall, allow inbound TCP 22, 80 and 443.
+   [`src/digitalocean/user-data.sh`](https://raw.githubusercontent.com/tkimnguyen/plone-in-a-box/main/src/digitalocean/user-data.sh).
+   Fill in the settings at the top: admin password, domain and Let's Encrypt email (for HTTPS), time zone and
+   versions. Keep each value inside its single quotes. This short script downloads the full provisioning script
+   from a fixed Plone in a Box release and runs it.
+3. Create the Droplet. If you add a Cloud Firewall, allow inbound TCP 22, 80 and 443. (The server's own firewall
+   allows only those ports either way.)
+4. Open the Droplet's address to watch the setup progress page, which turns into your Plone site when it's ready.
 
 ## After provisioning
 

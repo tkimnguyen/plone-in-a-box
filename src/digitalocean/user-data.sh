@@ -1,19 +1,25 @@
 #!/bin/bash
+
+# =============================================================================
+#  SET THE PLONE ADMIN PASSWORD HERE (at least 12 characters), between the
+#  single quotes. It can't contain a single quote itself.
+# =============================================================================
+export ADMIN_PASSWORD=''
+# If you leave it empty, a password is generated. To read it later, open the
+# Droplet in the control panel, choose Access > Launch Droplet Console, and run:
+#   cat /root/plone-credentials.txt
+# (or set a new one with: plone-reset-admin-password)
+
 #
 # Plone in a Box(TM) for DigitalOcean, without Terraform.
 #
 # When creating an Ubuntu 24.04 Droplet, under Additional Options choose
 # "Startup scripts (free)", paste this whole file into "Enter your scripts or
-# data", and edit the settings below. Keep each value inside the single quotes (a value can't contain a
-# single quote itself).
+# data", and edit the settings in it. Keep each value inside its single quotes.
 #
 # Open the Droplet's address a minute or two after it boots to watch the setup
 # progress page, which turns into your Plone site when it's ready (about
 # 10 minutes). Log in as "admin".
-
-# Plone admin password, at least 12 characters. Leave empty to have one
-# generated; then read it over SSH with: cat /root/plone-credentials.txt
-export ADMIN_PASSWORD=''
 
 # Domain name for the site, optional. DNS must already point at the Droplet
 # to get HTTPS, and LETSENCRYPT_EMAIL is required with it.

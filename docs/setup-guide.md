@@ -11,9 +11,10 @@ password when deploying, or one is generated for you; there is no `admin`/`admin
 
 * **An SSH key.** On a Mac or Linux, check with `ls ~/.ssh/*.pub`. If nothing is listed, create one with
   `ssh-keygen -t ed25519`.
-* **Server size.** Plone, Volto and PostgreSQL together need **at least 2 GB of RAM** (Linode 2 GB, AWS `t3.small`,
-  DigitalOcean `s-1vcpu-2gb`).
-  Smaller servers get swap added automatically but will be slow.
+* **Server size.** Plone, Volto and PostgreSQL together need **at least 2 GB of RAM** on Linode (2 GB) and AWS
+  (`t3.small`). On DigitalOcean, a 1 GB Droplet (`s-1vcpu-1gb`) is enough for a small site: in testing, setup
+  took about 7 minutes and the site settled at about 730 MB of RAM, using about 100 MB of the swap that's added
+  automatically on small servers. Choose 2 GB or more for a busier site.
 * **A domain name (optional).** For HTTPS, create a DNS `A` record pointing at the server's IP address *before*
   provisioning, or add HTTPS later (see [Adding HTTPS later](#adding-https-later)).
 
@@ -124,15 +125,19 @@ Open the `site_url` to watch the setup progress page (or follow `ssh root@<publi
 
 No command line is needed if you choose the admin password here.
 
-1. **Create → Droplets**, choose **Ubuntu 24.04 (LTS) x64**, a 2 GB size, and your SSH key.
+1. **Create → Droplets**, choose **Ubuntu 24.04 (LTS) x64**, a 1 GB or larger size, and your SSH key.
 2. Under **Additional Options**, choose **Startup scripts (free)** and paste into **Enter your scripts or data** the contents of
    [`src/digitalocean/user-data.sh`](https://raw.githubusercontent.com/tkimnguyen/plone-in-a-box/main/src/digitalocean/user-data.sh).
-   Fill in the settings at the top: admin password, domain and Let's Encrypt email (for HTTPS), time zone and
-   versions. Keep each value inside its single quotes. This short script downloads the full provisioning script
+   **Set the admin password on the first setting line**, then the optional domain and Let's Encrypt email (for
+   HTTPS), time zone and versions. Keep each value inside its single quotes. This short script downloads the full provisioning script
    from a fixed Plone in a Box release and runs it.
 3. Create the Droplet. If you add a Cloud Firewall, allow inbound TCP 22, 80 and 443. (The server's own firewall
    allows only those ports either way.)
 4. Open the Droplet's address to watch the setup progress page, which turns into your Plone site when it's ready.
+
+Forgot to set the password? You still don't need SSH: open the Droplet in the control panel, choose **Access →
+Launch Droplet Console**, and run `cat /root/plone-credentials.txt` to read the generated one, or
+`plone-reset-admin-password` to choose a new one.
 
 ## After provisioning
 

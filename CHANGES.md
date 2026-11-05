@@ -5,7 +5,11 @@
   src/digitalocean/user-data.sh into the Droplet's "Startup scripts" box and
   fill in its settings (admin password, domain, time zone, versions), like the
   Linode StackScript form. It downloads the provisioning script from a pinned
-  release and runs it, so there is no snapshot to build or maintain.
+  release and runs it, so there is no snapshot to build or maintain. The admin
+  password is the first setting, and the docs explain reading or resetting it from
+  the browser-based Droplet Console if it was left empty.
+- DigitalOcean: a 1 GB Droplet is enough for a small site (tested: about 730 MB
+  RAM and 100 MB swap in use).
   [tkimnguyen]
 
 

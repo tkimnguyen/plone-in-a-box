@@ -18,7 +18,8 @@ Volto 19; switch to `6.2` / `19` once Volto 19 has a final release.
 * **Amazon AWS**: [`src/aws/`](src/aws/main.tf) (Terraform), which runs the same script as EC2 user data
 * **DigitalOcean**: [`src/digitalocean/`](src/digitalocean/main.tf) (Terraform), which runs the same script as Droplet user data
 
-Use a server with at least 2 GB of RAM (Linode 2 GB, AWS `t3.small`, DigitalOcean `s-1vcpu-2gb`).
+Use a server with at least 2 GB of RAM on Linode (2 GB) and AWS (`t3.small`). On DigitalOcean, a 1 GB Droplet
+(`s-1vcpu-1gb`) is enough for a small site; choose 2 GB or more for a busier one.
 
 **Step-by-step instructions: [docs/setup-guide.md](docs/setup-guide.md)**, including AWS account setup, backups,
 upgrades and troubleshooting.
@@ -66,8 +67,9 @@ The Droplet gets a DigitalOcean Cloud Firewall allowing only ports 22, 80 and 44
 
 Without Terraform or a command line: when creating an Ubuntu 24.04 Droplet in the control panel, paste
 [`src/digitalocean/user-data.sh`](src/digitalocean/user-data.sh) into **Additional Options → Startup scripts
-(free)** and fill in the settings at its top (admin password, domain, time zone, versions). Then open the
-Droplet's address to watch the setup progress page.
+(free)**. Set the admin password on its first setting line, and optionally the domain, time zone and versions.
+Then open the Droplet's address to watch the setup progress page. If you forget the password, open **Access →
+Launch Droplet Console** and run `cat /root/plone-credentials.txt` (or `plone-reset-admin-password`).
 
 ### After provisioning
 

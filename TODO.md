@@ -1,5 +1,16 @@
 # TODO
 
+## Finish OS updates during setup
+
+New servers come up with Ubuntu updates still pending and "System restart required" on the login banner.
+
+- [ ] `src/StackScript`: use `apt-get full-upgrade` instead of `apt-get upgrade`, so updates that need new
+  packages (such as a new kernel) are installed too.
+- [ ] At the end of setup, reboot once if `/var/run/reboot-required` exists. The containers restart on their own;
+  make sure the progress page and the console login banner still make sense around the reboot.
+- [ ] Setup guide: tell people to run `sudo apt update && sudo apt full-upgrade -y` and `sudo reboot` now and
+  then (the site is down for a minute or two), and not to run `do-release-upgrade`.
+
 ## Move to Ubuntu 26.04 LTS
 
 - [ ] Ubuntu 26.04 LTS ("Resolute Raccoon") was released on 2026-04-23 (26.04.1 is out), supported until

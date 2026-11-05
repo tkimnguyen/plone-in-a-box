@@ -125,7 +125,7 @@ Open the `site_url` to watch the setup progress page (or follow `ssh root@<publi
 No command line is needed if you choose the admin password here.
 
 1. **Create → Droplets**, choose **Ubuntu 24.04 (LTS) x64**, a 2 GB size, and your SSH key.
-2. Under **Advanced Options**, check **Add initialization scripts** and paste the contents of
+2. Under **Additional Options**, choose **Startup scripts (free)** and paste into **Enter your scripts or data** the contents of
    [`src/digitalocean/user-data.sh`](https://raw.githubusercontent.com/tkimnguyen/plone-in-a-box/main/src/digitalocean/user-data.sh).
    Fill in the settings at the top: admin password, domain and Let's Encrypt email (for HTTPS), time zone and
    versions. Keep each value inside its single quotes. This short script downloads the full provisioning script

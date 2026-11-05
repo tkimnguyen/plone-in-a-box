@@ -2,9 +2,9 @@
 #
 # Plone in a Box(TM) for DigitalOcean, without Terraform.
 #
-# When creating an Ubuntu 24.04 Droplet, open Advanced Options, check
-# "Add initialization scripts", paste this whole file, and edit the settings
-# below. Keep each value inside the single quotes (a value can't contain a
+# When creating an Ubuntu 24.04 Droplet, under Additional Options choose
+# "Startup scripts (free)", paste this whole file into "Enter your scripts or
+# data", and edit the settings below. Keep each value inside the single quotes (a value can't contain a
 # single quote itself).
 #
 # Open the Droplet's address a minute or two after it boots to watch the setup

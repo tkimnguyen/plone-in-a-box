@@ -1,5 +1,14 @@
 # TODO
 
+## Update default versions
+
+- [ ] **Switch the defaults to Plone 6.2 and Volto 19.** Volto 19 has a final release (19.6.1 as of 2026-11-05),
+  which is when the README said to switch. Plone 6.1 bug-fix releases ended on 2026-06-25 (security fixes
+  continue until 2027-12-31); 6.2 is supported until 2028-06-30. Change `PLONE_VERSION` / `VOLTO_VERSION` in
+  `src/StackScript` (UDF defaults and fallbacks), `src/aws/main.tf`, `src/digitalocean/main.tf` and
+  `src/digitalocean/user-data.sh`, update the README and setup guide, and test a fresh deploy on each provider.
+  Then set `PIAB_RELEASE` in the launcher to the release that includes the change.
+
 ## Clean up old images and snapshots
 
 - [ ] Check the AWS and DigitalOcean accounts for images or snapshots used with the previous version of

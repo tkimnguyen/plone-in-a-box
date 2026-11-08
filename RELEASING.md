@@ -23,11 +23,28 @@ release, and the public Linode StackScript is updated by hand.
        still works
    * Delete the test servers afterwards (`terraform destroy` with the same `-var` options).
    * Or let `scripts/test-deploy.sh linode --ref <branch>` (or `digitalocean`) do the Linode or DigitalOcean test:
-     it creates a 1 GB server, runs these checks plus a restart, and deletes the server. Add
-     `--generated-password` for the generated-password check. It needs API tokens and a test SSH key; see the
-     comments at the top of the script. `scripts/test-deploy.sh cleanup linode` deletes any test servers left
-     behind.
+     it creates a 1 GB server, runs these checks plus a restart, and deletes the server (about 15 minutes). Add
+     `--generated-password` for the generated-password check. `scripts/test-deploy.sh cleanup linode` deletes any
+     test servers left behind. See [Automated test deploys](#automated-test-deploys) for the one-time setup.
 3. Merge the pull request.
+
+### Automated test deploys
+
+One-time setup for `scripts/test-deploy.sh`:
+
+* **SSH key** for test servers only: `ssh-keygen -t ed25519 -f ~/.ssh/piab_test_ed25519 -C piab-test -N ''`
+* **Linode**: in the tknguyen2 account, the restricted user `piab-test` (Identity & Access) has only the roles
+  `account_linode_creator`, `account_stackscript_creator` and the default viewer roles, so it can create servers
+  but can't touch existing Linodes or the public StackScript. As `piab-test`:
+  * a private StackScript `plone-in-a-box-test` (Target Images: Ubuntu 24.04); the script overwrites it each run
+  * a personal access token (Linodes Read/Write, StackScripts Read/Write, Events Read Only, 1-month expiry),
+    stored with `security add-generic-password -a "$USER" -s piab-linode-token -w`
+* **DigitalOcean**: a token with custom scopes `droplet` create/read/delete, `ssh_key` create/read and `tag`
+  create/read (30-day expiry), stored with `security add-generic-password -a "$USER" -s piab-do-token -w`. The
+  first run adds the SSH key to the account as `piab-test`.
+
+Tokens stay in the macOS Keychain; never paste them into chats or commit them. Remove one with
+`security delete-generic-password -s piab-linode-token` (or `piab-do-token`).
 
 ## 2. Release
 

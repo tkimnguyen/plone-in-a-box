@@ -17,8 +17,8 @@ server, watch the progress page, run the checks over SSH, reboot, check again, a
   with no production servers in it.
 - [ ] Claude Code permission rules for `api.linode.com` and `api.digitalocean.com` if the permission check blocks
   creating or deleting test servers.
-- [ ] Optionally, turn the steps into a script in the repo (for example `scripts/test-deploy.sh linode|digitalocean
-  <branch>`) that runs the checks from RELEASING.md, so anyone can repeat them.
+- [x] `scripts/test-deploy.sh linode|digitalocean --ref <branch>` creates the server, runs the checks from
+  RELEASING.md, restarts it, checks again and deletes it. Try it once the tokens and key exist.
 - [ ] Delete or let the tokens expire when not in use; remove the Keychain entries with
   `security delete-generic-password -s piab-linode-token` (and `piab-do-token`).
 

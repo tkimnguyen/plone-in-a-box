@@ -22,6 +22,11 @@ release, and the public Linode StackScript is updated by hand.
      * after `docker compose --project-directory /opt/plone up -d --force-recreate backend`, the same password
        still works
    * Delete the test servers afterwards (`terraform destroy` with the same `-var` options).
+   * Or let `scripts/test-deploy.sh linode --ref <branch>` (or `digitalocean`) do the Linode or DigitalOcean test:
+     it creates a 1 GB server, runs these checks plus a restart, and deletes the server. Add
+     `--generated-password` for the generated-password check. It needs API tokens and a test SSH key; see the
+     comments at the top of the script. `scripts/test-deploy.sh cleanup linode` deletes any test servers left
+     behind.
 3. Merge the pull request.
 
 ## 2. Release

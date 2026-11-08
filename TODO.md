@@ -6,9 +6,7 @@
 
 - [ ] The DigitalOcean token can reach every Droplet in the account; only the script's `piab-test` tag check keeps
   it away from other servers. Consider a separate DigitalOcean team with no other Droplets in it for testing.
-- [ ] AWS: the same script for EC2 (launch with the launcher as user data, a security group allowing 22/80/443,
-  terminate afterwards), using an IAM user limited to instances tagged `piab-test`.
-- [ ] Renew the tokens when they expire (Linode: 1 month, DigitalOcean: 30 days).
+- [ ] Renew the tokens when they expire (Linode: 1 month, DigitalOcean: 30 days), and rotate the AWS access key.
 
 ## Move to Ubuntu 26.04 LTS
 

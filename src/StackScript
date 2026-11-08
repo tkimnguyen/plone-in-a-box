@@ -49,11 +49,13 @@ log() { echo "[plone-in-a-box] $*"; }
 
 # If this run is the continuation after that restart, make sure it only
 # happens once, and remove the saved settings (they include the password).
+# The unit file itself stays until the end of setup: removing it and
+# reloading systemd while this run is going would make systemd forget the
+# service's settings.
 if [[ -e "$RESUME_UNIT" ]]; then
   log "Continuing setup after the restart"
   systemctl disable plone-in-a-box-resume.service || true
-  rm -f "$RESUME_UNIT" "$RESUME_DIR/settings"
-  systemctl daemon-reload || true
+  rm -f "$RESUME_DIR/settings"
 fi
 
 # --- Setup progress page -----------------------------------------------------
@@ -225,8 +227,9 @@ Wants=network-online.target
 After=network-online.target
 
 [Service]
-Type=oneshot
-TimeoutStartSec=infinity
+# simple, not oneshot: setup takes several minutes, and systemd puts a time
+# limit on starting a oneshot service.
+Type=simple
 ExecStart=/bin/bash -c '. ${RESUME_DIR}/settings && exec /bin/bash ${RESUME_DIR}/setup.sh'
 
 [Install]
@@ -600,6 +603,7 @@ cat >> /etc/issue <<EOF
 EOF
 
 rm -rf "$RESUME_DIR"
+rm -f "$RESUME_UNIT"
 if [[ -f /var/run/reboot-required ]]; then
   log "Some updates need a restart to take effect; restart the server when convenient (sudo reboot). Plone starts again by itself."
 fi

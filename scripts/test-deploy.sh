@@ -91,6 +91,9 @@ else
     AWS_SECRET_ACCESS_KEY=$(keychain_token piab-aws-secret-access-key || true)
     [[ -n "$AWS_ACCESS_KEY_ID" && -n "$AWS_SECRET_ACCESS_KEY" ]] \
       || die "no AWS access keys (see the comments at the top of this script)"
+    # A secret saved as the key ID would be echoed back in AWS's error messages.
+    [[ "$AWS_ACCESS_KEY_ID" =~ ^AKIA[A-Z0-9]{16}$ && ${#AWS_SECRET_ACCESS_KEY} -eq 40 ]] \
+      || die "the Keychain's AWS values don't look right: piab-aws-access-key-id should be 20 characters starting with AKIA, piab-aws-secret-access-key 40 characters"
     export AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY
   fi
   export AWS_DEFAULT_REGION="${PIAB_TEST_REGION:-${AWS_DEFAULT_REGION:-us-east-1}}" AWS_PAGER=""

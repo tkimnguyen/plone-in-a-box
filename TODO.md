@@ -8,17 +8,6 @@
   it away from other servers. Consider a separate DigitalOcean team with no other Droplets in it for testing.
 - [ ] Renew the tokens when they expire (Linode: 1 month, DigitalOcean: 30 days), and rotate the AWS access key.
 
-## Support Hetzner Cloud
-
-The launcher route, Terraform configuration, docs and test script are written (branch `hetzner`). Still to do:
-
-- [x] Launcher route tested by hand: CPX02 (1 vCPU, 1 GB, €5.99/month plus €0.50 for IPv4) in Helsinki; Plone came
-  up and editing works.
-- [x] `scripts/test-deploy.sh hetzner`: all checks passed on CPX02 (x86, 1 GB, Helsinki) and CAX11 (Arm, 4 GB,
-  Falkenstein).
-- [ ] `terraform apply` from `src/hetzner/` once.
-- [x] Cloud Console labels in the setup guide checked against the real pages.
-
 ## Support custom Plone projects (e.g. from cookieplone)
 
 Keep the official `plone/plone-backend` and `plone/plone-frontend` images as the default, so most people

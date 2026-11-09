@@ -233,20 +233,22 @@ No command line is needed if you choose the admin password here. In the
 1. **Type**: under **Shared Resources**, choose **Regular Performance** and **CPX02** (1 vCPU, 1 GB), which is enough
    for a small site, as on Linode and DigitalOcean; CPX12 (2 GB) or larger for a busier one. Arm plans, under
    **Cost-Optimized**, should also work (the Plone images support Arm), but are only offered in some locations.
-2. **Location**: Nuremberg, Falkenstein or Helsinki in Europe; Ashburn or Hillsboro in the US; or Singapore.
-3. **Image**: **Ubuntu 26.04**.
-4. **Networking**: keep **Public IPv4** and **Public IPv6** on. You need the IPv4 address to open the site (Hetzner
+2. **Location**: Nuremberg, Falkenstein or Helsinki in Europe; Ashburn or Hillsboro in the US; or Singapore (which
+   costs a little more).
+3. **Image**: on the **OS Images** tab, **Ubuntu**, with **26.04** chosen in its version menu.
+4. **Networking**: keep **Public IPv4** and **Public IPv6** ticked. You need the IPv4 address to open the site (Hetzner
    charges a little extra for it).
 5. **SSH keys**: add yours if you want to log in from your own computer. Without one, Hetzner emails you a root
    password, which you'd only need for the browser console.
-6. **Cloud config**: paste into the box (it says "Cloud-init configuration") the contents of
+6. **Firewalls** are optional. If you add one, allow inbound TCP 22, 80 and 443. (The server's own firewall allows
+   only those ports either way.) **Backups** are optional too, for 20% of the server's price.
+7. **Cloud config**: paste into the box (it says "Cloud-init configuration") the contents of
    [`src/user-data.sh`](https://raw.githubusercontent.com/tkimnguyen/plone-in-a-box/main/src/user-data.sh). **Set the admin password on the first
    setting line**, then the optional domain and Let's Encrypt email (for HTTPS), time zone and versions. Keep each
    value inside its single quotes.
-7. **Firewalls** are optional. If you add one, allow inbound TCP 22, 80 and 443. (The server's own firewall allows
-   only those ports either way.)
-8. Give the server a **Name** and click **Create & Buy now**. Open its IPv4 address (with `http://`) to watch the
-   setup progress page, which turns into your Plone site when it's ready.
+8. **Name** is filled in for you; change it if you like (for example `plone`). Click **Create & Buy now**, then open
+   the server's IPv4 address (with `http://`) to watch the setup progress page, which turns into your Plone site
+   when it's ready.
 
 Forgot to set the password? You still don't need SSH: open the server and click the **Console** button (`>_`) at the
 top right. Log in as `root` (with the password Hetzner emailed you, or after **Rescue → Reset root password**), and run

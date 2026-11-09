@@ -104,14 +104,19 @@ In the AWS console (Plone Foundation account), region **US East (N. Virginia) us
    ```
    Everything in this bucket is public, so only put CloudFormation templates in it.
 
-## 3. Update the public Linode StackScript
+## 3. Update the public Linode StackScripts
 
-1. Log in to Cloud Manager as **nguyen-plone**, the account that owns the public **Plone in a Box** StackScript.
-2. **StackScripts → Account StackScripts → ⋯ → Edit**.
+There are two public **Plone in a Box** StackScripts, one owned by **nguyen-plone** and one by **tknguyen2**.
+People can deploy either, so update both. For each account:
+
+1. Log in to Cloud Manager as that account.
+2. **StackScripts → Account StackScripts → ⋯ → Edit** on **Plone in a Box** (not the private
+   `plone-in-a-box-test`, which `scripts/test-deploy.sh` overwrites).
 3. Replace the **Script** with
    https://raw.githubusercontent.com/tkimnguyen/plone-in-a-box/main/src/StackScript, check that **Target Images**
    includes the Ubuntu release the script supports, and enter a revision note such as `2.1: <summary>`.
-4. Save, then confirm the Community StackScripts list shows today's date.
+4. Save, then confirm **Last Revision** shows today's date. (Community StackScripts leaves out your own
+   account's StackScripts, so check the other account's copy there.)
 
 Public StackScripts can't be deleted or made private by their owner; only Linode support can remove one.
 

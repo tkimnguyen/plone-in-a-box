@@ -3,7 +3,7 @@
 Your own [Plone 6](https://plone.org) website on a cloud server, without needing a command line.
 
 Plone in a Box is for people who want a Plone site of their own but aren't system administrators. You fill in a
-form on your cloud provider's website (Linode, DigitalOcean or Amazon AWS), choose an admin password, and click
+form on your cloud provider's website (Linode, DigitalOcean, Amazon AWS or Hetzner), choose an admin password, and click
 Create. About 10 minutes later, the server's address shows your new Plone site, ready to log in and edit. There's
 nothing to install on your computer.
 
@@ -26,11 +26,12 @@ Pick a cloud provider. You'll need an account with them and a way to pay.
 **Which one?** If you don't already use one of these, choose **Linode**: it has the simplest setup (a form with
 labelled fields, nothing to paste) and among the lowest prices for a small site. Choose **DigitalOcean** if you
 already have an account there; it costs about the same. Choose **AWS** if your organization already runs things
-there; its Launch Stack button opens a similar form, but a small site costs noticeably more. The setup guide
+there; its Launch Stack button opens a similar form, but a small site costs noticeably more. Choose **Hetzner**
+for the most memory for the money, especially in Europe; setup works like DigitalOcean's. The setup guide
 [compares them](docs/setup-guide.md#choosing-a-provider).
 
 A 1 GB server is enough for a small site on Linode and DigitalOcean (choose 2 GB or more for a busier one); on AWS,
-use at least `t3.small` (2 GB).
+use at least `t3.small` (2 GB). On Hetzner, the smallest shared plans already have 2 GB or more.
 
 The [setup guide](docs/setup-guide.md) has step-by-step instructions for each provider.
 
@@ -68,13 +69,25 @@ Details: [setup guide, DigitalOcean](docs/setup-guide.md#console-deployment-easi
 
 Details: [setup guide, AWS console](docs/setup-guide.md#console-deployment-easiest).
 
+### Hetzner
+
+1. Open the launcher script, [`src/user-data.sh`](https://raw.githubusercontent.com/tkimnguyen/plone-in-a-box/main/src/user-data.sh),
+   and copy all of it.
+2. In the [Hetzner Cloud Console](https://console.hetzner.cloud), open a project and click **Create server**: choose
+   a location, **Ubuntu 26.04** and the smallest shared plan (x86 or Arm).
+3. Paste the launcher into the **Cloud config** box. **Set the admin password between the quotes on its first
+   setting line.**
+4. Click **Create & Buy now**, then open the server's IPv4 address in your browser.
+
+Details: [setup guide, Hetzner](docs/setup-guide.md#console-deployment-easiest-2).
+
 ## Once your site is running
 
 * **Log in** as `admin` with the password you chose. For everyday editing, create personal accounts in
   **Site Setup → Users and Groups**.
 * **Forgot the password, or didn't set one?** Your provider has a console that runs in the browser: Linode's
-  **Launch LISH Console**, DigitalOcean's **Access → Launch Droplet Console**, or AWS's **Connect → EC2 Instance
-  Connect**. Open it and type one command: `sudo cat /root/plone-credentials.txt` shows a generated password, and
+  **Launch LISH Console**, DigitalOcean's **Access → Launch Droplet Console**, AWS's **Connect → EC2 Instance
+  Connect**, or Hetzner's **Console** (the `>_` button on the server's page). Open it and type one command: `sudo cat /root/plone-credentials.txt` shows a generated password, and
   `sudo plone-reset-admin-password` sets a new one.
 * **Using your own domain name:** point the domain at the server's address before creating it, and fill in the
   domain and email settings to get HTTPS automatically. Adding a domain to an existing server takes a few commands;
@@ -85,12 +98,13 @@ The setup guide also covers [backups, upgrades and troubleshooting](docs/setup-g
 
 ## For developers and system administrators
 
-AWS and DigitalOcean can also be set up with Terraform from [`src/aws/`](src/aws/main.tf) and
-[`src/digitalocean/`](src/digitalocean/main.tf). Both run the same provisioning script as the console routes,
+AWS, DigitalOcean and Hetzner can also be set up with Terraform from [`src/aws/`](src/aws/main.tf),
+[`src/digitalocean/`](src/digitalocean/main.tf) and [`src/hetzner/`](src/hetzner/main.tf). They run the same
+provisioning script as the console routes,
 [`src/StackScript`](src/StackScript), which is also the Linode StackScript.
 
 ```
-cd src/aws            # or src/digitalocean, with DIGITALOCEAN_TOKEN set
+cd src/aws            # or src/digitalocean with DIGITALOCEAN_TOKEN set, or src/hetzner with HCLOUD_TOKEN set
 terraform init
 terraform apply -var 'ssh_public_key_path=~/.ssh/id_ed25519.pub' -var 'admin_password=...'
 ```

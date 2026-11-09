@@ -1,3 +1,14 @@
+2.8 (unreleased)
+----------------
+
+- Hetzner Cloud: paste the launcher (src/user-data.sh) into the Cloud config
+  box when creating a server, or use Terraform from src/hetzner/ (server, SSH
+  key and a Hetzner Firewall allowing 22, 80 and 443). Setup guide "Option D:
+  Hetzner", and Hetzner in the README and the provider comparison.
+- scripts/test-deploy.sh: hetzner, in a separate piab-test project.
+  [tkimnguyen]
+
+
 2.7 (2026-11-08)
 ----------------
 

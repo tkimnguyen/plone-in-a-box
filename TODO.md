@@ -10,16 +10,13 @@
 
 ## Support Hetzner Cloud
 
-- [ ] **No command line:** in the Hetzner Cloud Console's **Create server** page, choose Ubuntu 26.04 and paste
-  `src/user-data.sh` into the **Cloud config** (user data) box, like DigitalOcean and AWS. Check that the launcher
-  works there unchanged, and which plan is the smallest that's comfortable.
-- [ ] **Terraform:** `src/hetzner/main.tf` with the `hcloud` provider (server, SSH key, Hetzner Firewall allowing
-  only TCP 22, 80 and 443), running the same script as user data, with the same variables as the AWS and
-  DigitalOcean configurations. Add it to the CI matrix.
-- [ ] How to read or reset the admin password without SSH (the Cloud Console's browser console), the server's
-  address for a domain (Primary IPs), and backups/snapshots.
-- [ ] README, setup guide ("Option D: Hetzner"), RELEASING.md test steps, and a test deploy (both routes; amd64
-  and Arm plans).
+The launcher route, Terraform configuration, docs and test script are written (branch `hetzner`). Still to do:
+
+- [ ] Check the plan names and locations in the docs against the Hetzner API (`cx23`, `cax11`, `cpx11`).
+- [ ] Test deploys with `scripts/test-deploy.sh hetzner`, on an x86 and an Arm plan, and `terraform apply` from
+  `src/hetzner/` once.
+- [ ] Check the Cloud Console labels in the setup guide (**Cloud config**, **Create & Buy now**, **Console**,
+  **Rescue → Reset root password**) against a real server.
 
 ## Support custom Plone projects (e.g. from cookieplone)
 

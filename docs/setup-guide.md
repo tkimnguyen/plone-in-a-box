@@ -14,15 +14,15 @@ Plone in a Box works the same on all four; the differences are in how you set it
 | | Linode (Akamai) | DigitalOcean | Amazon AWS | Hetzner |
 |---|---|---|---|---|
 | Setting it up | Easiest: a form with labelled fields for the password, domain and versions | Paste the launcher script and set the password in it | Easy: the Launch Stack button opens a form like Linode's | Paste the launcher script and set the password in it, like DigitalOcean |
-| Smallest server for a small site | 1 GB (Nanode) | 1 GB Droplet | `t3.small` (2 GB) | The smallest shared plan (2 GB or more) |
-| Monthly cost of that server | Among the lowest | About the same as Linode | Noticeably higher | Lowest, with the most memory for the money |
+| Smallest server for a small site | 1 GB (Nanode) | 1 GB Droplet | `t3.small` (2 GB) | 1 GB (for example CPX02) |
+| Monthly cost of that server | Among the lowest | About the same as Linode | Noticeably higher | About the same as Linode |
 | Address for a domain name | Fixed | Fixed | Fixed (the stack adds an Elastic IP) | Fixed |
 | Browser console for the password | LISH Console | Droplet Console | EC2 Instance Connect | Console |
 | Pricing | [linode.com/pricing](https://www.linode.com/pricing/) | [digitalocean.com/pricing](https://www.digitalocean.com/pricing) | [aws.amazon.com/ec2/pricing](https://aws.amazon.com/ec2/pricing/) | [hetzner.com/cloud](https://www.hetzner.com/cloud/) |
 
 If you don't already use one of them, choose Linode. Choose DigitalOcean or AWS if you, or your organization,
-already has an account and billing set up there. Choose Hetzner for the lowest price, especially in Europe, where it
-has most of its locations. All four offer automatic server backups for an extra charge; see
+already has an account and billing set up there. Choose Hetzner if you prefer a European provider; most of its
+locations are in Germany and Finland. All four offer automatic server backups for an extra charge; see
 **Backups** under [Day-to-day administration](#day-to-day-administration).
 
 ## Before you start
@@ -221,20 +221,20 @@ Open the `site_url` to watch the setup progress page (or follow `ssh root@<publi
 
 ## Option D: Hetzner
 
-Use the Hetzner Cloud Console, with no command line ([Console deployment](#console-deployment-easiest-2)), or
+Use the Hetzner Console, with no command line ([Console deployment](#console-deployment-easiest-2)), or
 Terraform ([Terraform deployment](#terraform-deployment-automated-more-technical-2)). Hetzner organizes servers in
 projects; use an existing one, or create one (for example `plone`) with **+ New project**.
 
 ### Console deployment (easiest)
 
 No command line is needed if you choose the admin password here. In the
-[Hetzner Cloud Console](https://console.hetzner.cloud), open your project and click **Create server**:
+[Hetzner Console](https://console.hetzner.com), open your project and click **Create server**:
 
 1. **Location**: Nuremberg, Falkenstein or Helsinki in Europe; Ashburn or Hillsboro in the US; or Singapore. Not every
    plan is offered in every location.
 2. **Image**: **Ubuntu 26.04**.
-3. **Type**: **Shared vCPU**, with **x86** or **Arm64** (both work), and the smallest plan offered. Each has at least
-   2 GB of memory, which is plenty for a small site.
+3. **Type**: **Shared vCPU**, x86 or Arm (both work). A 1 GB plan such as **CPX02** is enough for a small site, as on
+   Linode and DigitalOcean; choose 2 GB or more for a busier one.
 4. **Networking**: keep **Public IPv4** and **Public IPv6** on. You need the IPv4 address to open the site.
 5. **SSH keys**: add yours if you want to log in from your own computer. Without one, Hetzner emails you a root
    password, which you'd only need for the browser console.
@@ -267,7 +267,7 @@ The server keeps its IPv4 address (a Primary IP) for as long as it exists, so yo
    terraform apply -var 'ssh_public_key_path=~/.ssh/id_ed25519.pub'
    ```
    Options go in `src/hetzner/terraform.tfvars` the same way as for AWS. Variables include `location` (default
-   `nbg1`), `server_type` (default `cx23`; use an Arm type such as `cax11`, or `cpx11` in the US locations),
+   `hel1`), `server_type` (default `cpx02`, 1 GB; Arm types start with `cax`),
    `backups`, `domain`, `letsencrypt_email`, `site_timezone` and the versions.
 3. Terraform prints `site_url`, `public_ip` and `credentials_command`. The server also gets a Hetzner Firewall that
    allows only ports 22, 80 and 443.
@@ -355,7 +355,7 @@ sudo certbot --nginx --redirect -d <domain> -m <your-email> --agree-tos
 * **AWS** with the Launch Stack button: in CloudFormation, select the stack and click **Delete**. That removes the
   server, its disk, the firewall and the fixed IP address.
 * **AWS** launched yourself in EC2: terminate the instance, and release its Elastic IP if you allocated one.
-* **Hetzner**: delete the server in the Cloud Console (**Delete** on the server's page), or `terraform destroy` from
+* **Hetzner**: delete the server in the Hetzner Console (**Delete** on the server's page), or `terraform destroy` from
   `src/hetzner/` with the same `HCLOUD_TOKEN`.
 
 If you used Terraform, delete the AWS access key, DigitalOcean API token or Hetzner API token when you no longer
@@ -376,7 +376,7 @@ need it.
 | DigitalOcean: `SSH Key is already in use on your account` | Pass `-var 'ssh_key_fingerprint=...'` with the existing key's fingerprint. |
 | DigitalOcean: `Unable to authenticate you` | `DIGITALOCEAN_TOKEN` isn't set in this terminal, or the token lacks write scope. |
 | DigitalOcean: `You are missing the required permission tag:create` (or another `...:create`) | The token has custom scopes. Create one with **Full Access**, export it, and run `terraform apply` again. |
-| Hetzner: `unsupported location for server type` | That plan isn't offered in that location. Choose another plan or location; in the US locations, use `cpx11`. |
+| Hetzner: `unsupported location for server type` | That plan isn't offered in that location. Choose another plan or location; the Create server page shows which plans each location offers. |
 | Hetzner: `SSH key with the same fingerprint already exists` (Terraform) | The key is already in the project. Delete it under **Security → SSH keys**, or use a different key. |
 | Terraform: `no file exists at .../id_ed25519.pub` | Pass your key's path with `-var 'ssh_public_key_path=...'`, for `destroy` too. |
 | Terraform on a Mac: `lookup sts.<region>.amazonaws.com: no such host` | Turn off iCloud Private Relay and retry. |

@@ -27,11 +27,11 @@ Pick a cloud provider. You'll need an account with them and a way to pay.
 labelled fields, nothing to paste) and among the lowest prices for a small site. Choose **DigitalOcean** if you
 already have an account there; it costs about the same. Choose **AWS** if your organization already runs things
 there; its Launch Stack button opens a similar form, but a small site costs noticeably more. Choose **Hetzner**
-for the most memory for the money, especially in Europe; setup works like DigitalOcean's. The setup guide
+if you prefer a European provider; it costs about the same, and setup works like DigitalOcean's. The setup guide
 [compares them](docs/setup-guide.md#choosing-a-provider).
 
-A 1 GB server is enough for a small site on Linode and DigitalOcean (choose 2 GB or more for a busier one); on AWS,
-use at least `t3.small` (2 GB). On Hetzner, the smallest shared plans already have 2 GB or more.
+A 1 GB server is enough for a small site on Linode, DigitalOcean and Hetzner (choose 2 GB or more for a busier one);
+on AWS, use at least `t3.small` (2 GB).
 
 The [setup guide](docs/setup-guide.md) has step-by-step instructions for each provider.
 
@@ -73,8 +73,8 @@ Details: [setup guide, AWS console](docs/setup-guide.md#console-deployment-easie
 
 1. Open the launcher script, [`src/user-data.sh`](https://raw.githubusercontent.com/tkimnguyen/plone-in-a-box/main/src/user-data.sh),
    and copy all of it.
-2. In the [Hetzner Cloud Console](https://console.hetzner.cloud), open a project and click **Create server**: choose
-   a location, **Ubuntu 26.04** and the smallest shared plan (x86 or Arm).
+2. In the [Hetzner Console](https://console.hetzner.com), open a project and click **Create server**: choose a
+   location, **Ubuntu 26.04** and a shared plan (1 GB, such as CPX02, is enough for a small site).
 3. Paste the launcher into the **Cloud config** box. **Set the admin password between the quotes on its first
    setting line.**
 4. Click **Create & Buy now**, then open the server's IPv4 address in your browser.

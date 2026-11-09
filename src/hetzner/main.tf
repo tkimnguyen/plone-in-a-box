@@ -5,7 +5,7 @@
 #   terraform init
 #   terraform apply -var 'ssh_public_key_path=~/.ssh/id_ed25519.pub'
 #
-# The token belongs to one Hetzner Cloud project (Security > API tokens, Read &
+# The token belongs to one Hetzner project (Security > API tokens, Read &
 # Write), and the server is created in that project.
 #
 # The server provisions itself on first boot by running ../StackScript as user
@@ -28,13 +28,13 @@ terraform {
 variable "location" {
   description = "Hetzner location: nbg1 (Nuremberg), fsn1 (Falkenstein), hel1 (Helsinki), ash (Ashburn, VA), hil (Hillsboro, OR) or sin (Singapore). Not every server type is offered everywhere."
   type        = string
-  default     = "nbg1"
+  default     = "hel1"
 }
 
 variable "server_type" {
-  description = "Hetzner server type. Shared x86 types start with cx or cpx, Arm types with cax; see the Cloud Console's pricing for what each location offers."
+  description = "Hetzner server type. cpx02 (1 vCPU, 1 GB) is enough for a small site; Arm types start with cax. The Create server page shows which types each location offers."
   type        = string
-  default     = "cx23"
+  default     = "cpx02"
 }
 
 variable "ssh_public_key_path" {

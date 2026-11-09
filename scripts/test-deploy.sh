@@ -26,7 +26,7 @@
 # ~/.ssh/piab_test_ed25519 (or PIAB_TEST_SSH_KEY). Optional: PIAB_TEST_REGION,
 # PIAB_LINODE_FIREWALL_ID, PIAB_AWS_INSTANCE_TYPE (default t3.small),
 # PIAB_TEST_UBUNTU (Ubuntu release: 26.04, the default, or 24.04),
-# PIAB_HETZNER_SERVER_TYPE (default cx23; an Arm type such as cax11 works too).
+# PIAB_HETZNER_SERVER_TYPE (default cpx02; an Arm type, cax..., works too).
 #
 # Linode deploys use the private StackScript "plone-in-a-box-test", which this
 # script overwrites with src/StackScript from REF. DigitalOcean, AWS and Hetzner deploys
@@ -252,7 +252,7 @@ if [[ "$PROVIDER" == linode ]]; then
   SERVER_ID=$(jq -r '.id' <<<"$created")
   IP=$(jq -r '.ipv4[0]' <<<"$created")
 elif [[ "$PROVIDER" == hetzner ]]; then
-  REGION=${PIAB_TEST_REGION:-nbg1}
+  REGION=${PIAB_TEST_REGION:-hel1}
   fingerprint=$(ssh-keygen -l -E md5 -f "$SSH_KEY.pub" | awk '{print $2}' | sed 's/^MD5://')
   key_id=$(api GET "/ssh_keys?fingerprint=$fingerprint" | jq -r '.ssh_keys[0].id // empty')
   if [[ -z "$key_id" ]]; then
@@ -261,7 +261,7 @@ elif [[ "$PROVIDER" == hetzner ]]; then
         '{name: $tag, public_key: $k, labels: {($tag): "true"}}')" | jq -r '.ssh_key.id')
   fi
   body=$(jq -nc --arg location "$REGION" --arg name "$NAME" --arg tag "$TAG" --argjson key "$key_id" \
-      --arg type "${PIAB_HETZNER_SERVER_TYPE:-cx23}" --arg ubuntu "$UBUNTU" --arg ud "$(launcher)" \
+      --arg type "${PIAB_HETZNER_SERVER_TYPE:-cpx02}" --arg ubuntu "$UBUNTU" --arg ud "$(launcher)" \
       '{name: $name, server_type: $type, image: ("ubuntu-" + $ubuntu), location: $location,
         ssh_keys: [$key], user_data: $ud, labels: {($tag): "true"},
         public_net: {enable_ipv4: true, enable_ipv6: true}}')

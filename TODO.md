@@ -12,11 +12,12 @@
 
 The launcher route, Terraform configuration, docs and test script are written (branch `hetzner`). Still to do:
 
-- [ ] Check the plan names and locations in the docs against the Hetzner API (`cx23`, `cax11`, `cpx11`).
+- [x] Launcher route tested by hand: CPX02 (1 vCPU, 1 GB, €5.99/month) in Helsinki, Plone came up and editing works.
+- [ ] Find the Arm plan names and which locations offer them (Hetzner API), for the Arm test.
 - [ ] Test deploys with `scripts/test-deploy.sh hetzner`, on an x86 and an Arm plan, and `terraform apply` from
   `src/hetzner/` once.
-- [ ] Check the Cloud Console labels in the setup guide (**Cloud config**, **Create & Buy now**, **Console**,
-  **Rescue → Reset root password**) against a real server.
+- [ ] Check the Create server page labels in the setup guide (**Cloud config**, **Create & Buy now**) and
+  **Rescue → Reset root password**.
 
 ## Support custom Plone projects (e.g. from cookieplone)
 

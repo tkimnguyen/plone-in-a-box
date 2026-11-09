@@ -27,7 +27,7 @@ release, and the public Linode StackScript is updated by hand.
        still works
    * Delete the test servers afterwards (`terraform destroy` with the same `-var` options).
    * Or let `scripts/test-deploy.sh linode --ref <branch>` (or `digitalocean`, `aws` or `hetzner`) do the test: it
-     creates a server (1 GB on Linode and DigitalOcean, `t3.small` on AWS, `cx23` on Hetzner) with the launcher or StackScript from the branch,
+     creates a server (1 GB on Linode and DigitalOcean, `t3.small` on AWS, CPX02 (1 GB) on Hetzner) with the launcher or StackScript from the branch,
      runs these checks plus a restart, and deletes the server (about 15 minutes). Add
      `--generated-password` for the generated-password check. `scripts/test-deploy.sh cleanup linode` deletes any
      test servers left behind. See [Automated test deploys](#automated-test-deploys) for the one-time setup.
@@ -47,10 +47,10 @@ One-time setup for `scripts/test-deploy.sh`:
 * **DigitalOcean**: a token with custom scopes `droplet` create/read/delete, `ssh_key` create/read and `tag`
   create/read (30-day expiry), stored with `security add-generic-password -a "$USER" -s piab-do-token -w`. The
   first run adds the SSH key to the account as `piab-test`.
-* **Hetzner**: in the [Cloud Console](https://console.hetzner.cloud), a project `piab-test` used only for tests, so its
+* **Hetzner**: in the [Hetzner Console](https://console.hetzner.com), a project `piab-test` used only for tests, so its
   token can't reach any other servers. In it, **Security → API tokens → Generate API token** (Read & Write), stored
   with `security add-generic-password -a "$USER" -s piab-hetzner-token -w`. The first run adds the SSH key to the
-  project as `piab-test`. `PIAB_HETZNER_SERVER_TYPE=cax11` tests an Arm server.
+  project as `piab-test`. Set `PIAB_HETZNER_SERVER_TYPE` to an Arm type (`cax…`) to test Arm.
 * **AWS**: install the AWS CLI (`brew install awscli`). In IAM, create a user `piab-test` with no console access
   and one inline policy, the contents of [`scripts/aws-test-policy.json`](scripts/aws-test-policy.json): it can
   launch, restart and terminate only instances tagged `piab-test`, and create only the `piab-test` key pair and

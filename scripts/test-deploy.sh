@@ -193,7 +193,8 @@ git branch -r --contains "$SHA" 2>/dev/null | grep -q 'origin/' \
 
 WORK=$(mktemp -d "${TMPDIR:-/tmp}/piab-test.XXXXXX")
 chmod 700 "$WORK"
-NAME="$TAG-$PROVIDER-$(date +%Y%m%d-%H%M%S)"
+# The random suffix keeps names unique when several runs start at once.
+NAME="$TAG-$PROVIDER-$(date +%Y%m%d-%H%M%S)-$(openssl rand -hex 2)"
 ADMIN_PASSWORD=""
 (( GENERATED )) || ADMIN_PASSWORD=$(openssl rand -base64 24 | tr -dc 'A-Za-z0-9' | cut -c1-20)
 
@@ -257,8 +258,11 @@ elif [[ "$PROVIDER" == hetzner ]]; then
   key_id=$(api GET "/ssh_keys?fingerprint=$fingerprint" | jq -r '.ssh_keys[0].id // empty')
   if [[ -z "$key_id" ]]; then
     say "Adding the test SSH key to the Hetzner project as $TAG"
+    # If another run adds the key at the same moment, use the one it added.
     key_id=$(api POST /ssh_keys "$(jq -nc --arg k "$(cat "$SSH_KEY.pub")" --arg tag "$TAG" \
-        '{name: $tag, public_key: $k, labels: {($tag): "true"}}')" | jq -r '.ssh_key.id')
+        '{name: $tag, public_key: $k, labels: {($tag): "true"}}')" 2>/dev/null | jq -r '.ssh_key.id') \
+      || key_id=$(api GET "/ssh_keys?fingerprint=$fingerprint" | jq -r '.ssh_keys[0].id // empty')
+    [[ -n "$key_id" ]] || die "couldn't add the SSH key to the Hetzner project"
   fi
   body=$(jq -nc --arg location "$REGION" --arg name "$NAME" --arg tag "$TAG" --argjson key "$key_id" \
       --arg type "${PIAB_HETZNER_SERVER_TYPE:-cpx02}" --arg ubuntu "$UBUNTU" --arg ud "$(launcher)" \

@@ -231,8 +231,9 @@ No command line is needed if you choose the admin password here. In the
 [Hetzner Console](https://console.hetzner.com), open your project and click **Create server**:
 
 1. **Type**: under **Shared Resources**, choose **Regular Performance** and **CPX02** (1 vCPU, 1 GB), which is enough
-   for a small site, as on Linode and DigitalOcean; CPX12 (2 GB) or larger for a busier one. Arm plans, under
-   **Cost-Optimized**, should also work (the Plone images support Arm), but are only offered in some locations.
+   for a small site, as on Linode and DigitalOcean; CPX12 (2 GB) or larger for a busier one. CPX02 isn't offered in
+   the US locations; there, choose **CPX11** (2 GB). Arm plans (**Cost-Optimized**, such as CAX11) work too, in the
+   German and Finnish locations that have them in stock.
 2. **Location**: Nuremberg, Falkenstein or Helsinki in Europe; Ashburn or Hillsboro in the US; or Singapore (which
    costs a little more).
 3. **Image**: on the **OS Images** tab, **Ubuntu**, with **26.04** chosen in its version menu.
@@ -270,7 +271,7 @@ The server keeps its IPv4 address (a Primary IP) for as long as it exists, so yo
    terraform apply -var 'ssh_public_key_path=~/.ssh/id_ed25519.pub'
    ```
    Options go in `src/hetzner/terraform.tfvars` the same way as for AWS. Variables include `location` (default
-   `hel1`), `server_type` (default `cpx02`, 1 GB; Arm types start with `cax`),
+   `hel1`), `server_type` (default `cpx02`, 1 GB; `cpx11` in `ash` and `hil`; Arm types such as `cax11` work too),
    `backups`, `domain`, `letsencrypt_email`, `site_timezone` and the versions.
 3. Terraform prints `site_url`, `public_ip` and `credentials_command`. The server also gets a Hetzner Firewall that
    allows only ports 22, 80 and 443.
@@ -379,7 +380,7 @@ need it.
 | DigitalOcean: `SSH Key is already in use on your account` | Pass `-var 'ssh_key_fingerprint=...'` with the existing key's fingerprint. |
 | DigitalOcean: `Unable to authenticate you` | `DIGITALOCEAN_TOKEN` isn't set in this terminal, or the token lacks write scope. |
 | DigitalOcean: `You are missing the required permission tag:create` (or another `...:create`) | The token has custom scopes. Create one with **Full Access**, export it, and run `terraform apply` again. |
-| Hetzner: `unsupported location for server type` | That plan isn't offered in that location. Choose another plan or location; the Create server page shows which plans each location offers. |
+| Hetzner: `unsupported location for server type` | That plan isn't offered in that location. Choose another plan or location; the Create server page shows which plans each location offers. In the US locations (`ash`, `hil`), use `cpx11`. |
 | Hetzner: `SSH key with the same fingerprint already exists` (Terraform) | The key is already in the project. Delete it under **Security → SSH keys**, or use a different key. |
 | Terraform: `no file exists at .../id_ed25519.pub` | Pass your key's path with `-var 'ssh_public_key_path=...'`, for `destroy` too. |
 | Terraform on a Mac: `lookup sts.<region>.amazonaws.com: no such host` | Turn off iCloud Private Relay and retry. |

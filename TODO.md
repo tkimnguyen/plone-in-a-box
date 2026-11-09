@@ -14,10 +14,9 @@ The launcher route, Terraform configuration, docs and test script are written (b
 
 - [x] Launcher route tested by hand: CPX02 (1 vCPU, 1 GB, €5.99/month plus €0.50 for IPv4) in Helsinki; Plone came
   up and editing works.
-- [ ] Arm: only the Cost-Optimized plans (`cax…`, limited availability; not offered in Helsinki at the time). Find a
-  location that has one (Hetzner API) for the Arm test.
-- [ ] Test deploys with `scripts/test-deploy.sh hetzner`, on an x86 and an Arm plan, and `terraform apply` from
-  `src/hetzner/` once.
+- [x] `scripts/test-deploy.sh hetzner`: all checks passed on CPX02 (x86, 1 GB, Helsinki) and CAX11 (Arm, 4 GB,
+  Falkenstein).
+- [ ] `terraform apply` from `src/hetzner/` once.
 - [x] Cloud Console labels in the setup guide checked against the real pages.
 
 ## Support custom Plone projects (e.g. from cookieplone)

@@ -32,7 +32,7 @@ variable "location" {
 }
 
 variable "server_type" {
-  description = "Hetzner server type. cpx02 (1 vCPU, 1 GB) is enough for a small site; Arm types start with cax. The Create server page shows which types each location offers."
+  description = "Hetzner server type. cpx02 (1 vCPU, 1 GB) is enough for a small site, but isn't offered in ash or hil; use cpx11 (2 GB) there. Arm types such as cax11 work too."
   type        = string
   default     = "cpx02"
 }

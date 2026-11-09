@@ -14,6 +14,9 @@
 #                          one (default: set a random one when deploying)
 #   --keep                 don't delete the server at the end (delete it later
 #                          with "cleanup")
+#   --addons "PKG ..."     install these backend add-ons, then check they are
+#                          offered in Site Setup, can be activated, and survive
+#                          recreating the backend and restarting the server
 #
 # "list" shows the test servers that exist; "cleanup" deletes all of them.
 # Only servers tagged piab-test are ever touched.
@@ -50,7 +53,7 @@ esac
 LINODE_STACKSCRIPT_LABEL=plone-in-a-box-test
 SSH_KEY="${PIAB_TEST_SSH_KEY:-$HOME/.ssh/piab_test_ed25519}"
 
-PROVIDER="" ACTION=deploy REF="" GENERATED=0 KEEP=0
+PROVIDER="" ACTION=deploy REF="" GENERATED=0 KEEP=0 ADDONS=""
 SERVER_ID="" IP="" FAILURES=0
 
 die() { echo "error: $*" >&2; exit 1; }
@@ -59,7 +62,7 @@ pass() { say "PASS  $*"; }
 fail() { say "FAIL  $*"; FAILURES=$((FAILURES + 1)); }
 check() { local what=$1; shift; if "$@" >/dev/null 2>&1; then pass "$what"; else fail "$what"; fi; }
 
-usage() { sed -n '3,20p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
+usage() { sed -n '3,23p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
 
 case "${1:-}" in
   linode|digitalocean|aws|hetzner) PROVIDER=$1 ;;
@@ -73,6 +76,7 @@ while (( $# )); do
     --ref) REF=${2:?--ref needs a value}; shift ;;
     --generated-password) GENERATED=1 ;;
     --keep) KEEP=1 ;;
+    --addons) ADDONS=${2:?--addons needs a value}; shift ;;
     *) usage ;;
   esac
   shift
@@ -206,7 +210,9 @@ say "Notes, passwords and logs: $WORK"
 {
   echo "ref=$REF sha=$SHA name=$NAME"
   (( GENERATED )) && echo "admin password: generated on the server" || echo "admin password: $ADMIN_PASSWORD"
+  [[ -z "$ADDONS" ]] || echo "add-ons: $ADDONS"
 } > "$WORK/notes.txt"
+[[ "$ADDONS" != *"'"* ]] || die "--addons can't contain a single quote"
 
 cleanup_on_exit() {
   local status=$?
@@ -230,13 +236,16 @@ launcher() {
     # The three-line launcher from the README and setup guide.
     printf '%s\n' '#!/bin/bash' \
       "export ADMIN_PASSWORD='${ADMIN_PASSWORD:-CHANGE-ME}'" \
+      ${ADDONS:+"export ADDONS='$ADDONS'"} \
       "curl -fsSL --retry 10 --retry-all-errors -o /root/plone-in-a-box.sh https://raw.githubusercontent.com/tkimnguyen/plone-in-a-box/$SHA/src/StackScript && bash /root/plone-in-a-box.sh"
     return
   fi
   text=$(git show "$SHA:src/user-data.sh" \
     | sed -e "s/^export ADMIN_PASSWORD=''$/export ADMIN_PASSWORD='$ADMIN_PASSWORD'/" \
+          -e "s|^export ADDONS=''$|export ADDONS='${ADDONS//&/\\&}'|" \
           -e "s/^PIAB_RELEASE='[^']*'$/PIAB_RELEASE='$SHA'/")
   grep -q "^PIAB_RELEASE='$SHA'$" <<<"$text" || die "couldn't set PIAB_RELEASE in src/user-data.sh"
+  [[ -z "$ADDONS" ]] || grep -qF "export ADDONS='$ADDONS'" <<<"$text" || die "couldn't set ADDONS in src/user-data.sh"
   printf '%s\n' "$text"
 }
 
@@ -254,10 +263,10 @@ if [[ "$PROVIDER" == linode ]]; then
   ROOT_PASS=$(openssl rand -base64 33 | tr -d '\n')
   body=$(jq -nc --arg region "$REGION" --arg label "$NAME" --arg tag "$TAG" --arg root "$ROOT_PASS" \
       --arg key "$(cat "$SSH_KEY.pub")" --argjson ss "$STACKSCRIPT_ID" --arg pw "$ADMIN_PASSWORD" \
-      --arg fw "${PIAB_LINODE_FIREWALL_ID:-}" --arg ubuntu "$UBUNTU" \
+      --arg fw "${PIAB_LINODE_FIREWALL_ID:-}" --arg ubuntu "$UBUNTU" --arg addons "$ADDONS" \
       '{region: $region, type: "g6-nanode-1", image: ("linode/ubuntu" + $ubuntu), label: $label, tags: [$tag],
         root_pass: $root, authorized_keys: [$key], stackscript_id: $ss,
-        stackscript_data: {ADMIN_PASSWORD: $pw}, booted: true}
+        stackscript_data: {ADMIN_PASSWORD: $pw, ADDONS: $addons}, booted: true}
        + (if $fw == "" then {} else {firewall_id: ($fw | tonumber)} end)')
   created=$(api POST /linode/instances "$body")
   SERVER_ID=$(jq -r '.id' <<<"$created")
@@ -389,6 +398,31 @@ login() {
     | jq -er '.token'
 }
 old_password_rejected() { ! login "$ADMIN_PASSWORD"; }
+# The add-on names without versions or extras, e.g. collective.easyform.
+addon_names() { for a in $ADDONS; do a=${a%%[[~=!<>]*}; echo "$a"; done; }
+# Every add-on is offered in Site Setup > Add-ons (or is already activated).
+addons_listed() {
+  local token ids name
+  token=$(login "$1") || return 1
+  ids=$(curl -s -m 30 "http://$IP/++api++/@addons" -H 'Accept: application/json' \
+    -H "Authorization: Bearer $token" | jq -r '.items[].id') || return 1
+  for name in $(addon_names); do grep -qx "$name" <<<"$ids" || return 1; done
+}
+addons_activate() {
+  local token name
+  token=$(login "$1") || return 1
+  for name in $(addon_names); do
+    curl -sf -m 120 -X POST "http://$IP/++api++/@addons/$name/install" -H 'Accept: application/json' \
+      -H "Authorization: Bearer $token" >/dev/null || return 1
+  done
+}
+addons_active() {
+  local token installed name
+  token=$(login "$1") || return 1
+  installed=$(curl -s -m 30 "http://$IP/++api++/@addons" -H 'Accept: application/json' \
+    -H "Authorization: Bearer $token" | jq -r '.items[] | select(.is_installed) | .id') || return 1
+  for name in $(addon_names); do grep -qx "$name" <<<"$installed" || return 1; done
+}
 site_is_plone() { ! page | grep -q 'Plone in a Box</title>' && curl -sf -m 10 "http://$IP/++api++/" | jq -e '."@id"' >/dev/null; }
 port_closed() {
   local timeout=(-w 5)
@@ -439,6 +473,15 @@ check "plone-reset-admin-password reports success" grep -q 'has been changed' <<
 check "the new password works" login "$NEW_PASSWORD"
 check "the old password no longer works" old_password_rejected
 
+# --- Add-ons -------------------------------------------------------------------------
+
+if [[ -n "$ADDONS" ]]; then
+  grep '^\[plone-in-a-box\]' "$WORK/setup.log" | grep -i 'add-ons' | sed 's/^/      /' || true
+  check "add-ons are offered in Site Setup > Add-ons" addons_listed "$NEW_PASSWORD"
+  check "add-ons can be activated" addons_activate "$NEW_PASSWORD"
+  check "add-ons are active" addons_active "$NEW_PASSWORD"
+fi
+
 # --- Network -------------------------------------------------------------------------
 
 for port in 5432 8080 3000; do
@@ -471,6 +514,9 @@ wait_until "SSH is back after the restart" 600 rssh true || exit 1
 wait_until "site works after the restart" 600 login "$NEW_PASSWORD" || true
 check "setup didn't run again after the restart" test "$(count_in_log 'Continuing setup')" = "$continued"
 check "setup finished exactly once" test "$(count_in_log 'Finished')" = 1
+if [[ -n "$ADDONS" ]]; then
+  check "add-ons are still active after the restarts" addons_active "$NEW_PASSWORD"
+fi
 
 # --- Result -------------------------------------------------------------------------------
 

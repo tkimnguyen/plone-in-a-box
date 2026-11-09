@@ -104,12 +104,13 @@ In the AWS console (Plone Foundation account), region **US East (N. Virginia) us
    ```
    Everything in this bucket is public, so only put CloudFormation templates in it.
 
-## 3. Update the public Linode StackScripts
+## 3. Update the public Linode StackScript
 
-There are two public **Plone in a Box** StackScripts, one owned by **nguyen-plone** and one by **tknguyen2**.
-People can deploy either, so update both. For each account:
+The public **Plone in a Box** StackScript is [931893](https://cloud.linode.com/stackscripts/931893), owned by
+**nguyen-plone**; the README and setup guide link to it. An older copy, 692002 owned by **tknguyen2**, is waiting
+for Linode support to remove it; until it's gone, update it too, so nobody deploys an old version. For each:
 
-1. Log in to Cloud Manager as that account.
+1. Log in to Cloud Manager as the owner.
 2. **StackScripts → Account StackScripts → ⋯ → Edit** on **Plone in a Box** (not the private
    `plone-in-a-box-test`, which `scripts/test-deploy.sh` overwrites).
 3. Replace the **Script** with

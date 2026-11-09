@@ -239,7 +239,7 @@ No command line is needed if you choose the admin password here. In the
    charges a little extra for it).
 5. **SSH keys**: add yours if you want to log in from your own computer. Without one, Hetzner emails you a root
    password, which you'd only need for the browser console.
-6. **Cloud config**: paste the contents of
+6. **Cloud config**: paste into the box (it says "Cloud-init configuration") the contents of
    [`src/user-data.sh`](https://raw.githubusercontent.com/tkimnguyen/plone-in-a-box/main/src/user-data.sh). **Set the admin password on the first
    setting line**, then the optional domain and Let's Encrypt email (for HTTPS), time zone and versions. Keep each
    value inside its single quotes.

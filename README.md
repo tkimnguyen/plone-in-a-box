@@ -74,7 +74,7 @@ Details: [setup guide, AWS console](docs/setup-guide.md#console-deployment-easie
 1. Open the launcher script, [`src/user-data.sh`](https://raw.githubusercontent.com/tkimnguyen/plone-in-a-box/main/src/user-data.sh),
    and copy all of it.
 2. In the [Hetzner Console](https://console.hetzner.com), open a project and click **Create server**: choose a
-   location, **Ubuntu 26.04** and a shared plan (1 GB, such as CPX02, is enough for a small site).
+   **Regular Performance** plan (**CPX02**, 1 GB, is enough for a small site), a location and **Ubuntu 26.04**.
 3. Paste the launcher into the **Cloud config** box. **Set the admin password between the quotes on its first
    setting line.**
 4. Click **Create & Buy now**, then open the server's IPv4 address in your browser.

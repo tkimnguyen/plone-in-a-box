@@ -14,7 +14,7 @@ Plone in a Box works the same on all four; the differences are in how you set it
 | | Linode (Akamai) | DigitalOcean | Amazon AWS | Hetzner |
 |---|---|---|---|---|
 | Setting it up | Easiest: a form with labelled fields for the password, domain and versions | Paste the launcher script and set the password in it | Easy: the Launch Stack button opens a form like Linode's | Paste the launcher script and set the password in it, like DigitalOcean |
-| Smallest server for a small site | 1 GB (Nanode) | 1 GB Droplet | `t3.small` (2 GB) | 1 GB (for example CPX02) |
+| Smallest server for a small site | 1 GB (Nanode) | 1 GB Droplet | `t3.small` (2 GB) | 1 GB (CPX02) |
 | Monthly cost of that server | Among the lowest | About the same as Linode | Noticeably higher | About the same as Linode |
 | Address for a domain name | Fixed | Fixed | Fixed (the stack adds an Elastic IP) | Fixed |
 | Browser console for the password | LISH Console | Droplet Console | EC2 Instance Connect | Console |
@@ -230,12 +230,13 @@ projects; use an existing one, or create one (for example `plone`) with **+ New 
 No command line is needed if you choose the admin password here. In the
 [Hetzner Console](https://console.hetzner.com), open your project and click **Create server**:
 
-1. **Location**: Nuremberg, Falkenstein or Helsinki in Europe; Ashburn or Hillsboro in the US; or Singapore. Not every
-   plan is offered in every location.
-2. **Image**: **Ubuntu 26.04**.
-3. **Type**: **Shared vCPU**, x86 or Arm (both work). A 1 GB plan such as **CPX02** is enough for a small site, as on
-   Linode and DigitalOcean; choose 2 GB or more for a busier one.
-4. **Networking**: keep **Public IPv4** and **Public IPv6** on. You need the IPv4 address to open the site.
+1. **Type**: under **Shared Resources**, choose **Regular Performance** and **CPX02** (1 vCPU, 1 GB), which is enough
+   for a small site, as on Linode and DigitalOcean; CPX12 (2 GB) or larger for a busier one. Arm plans, under
+   **Cost-Optimized**, should also work (the Plone images support Arm), but are only offered in some locations.
+2. **Location**: Nuremberg, Falkenstein or Helsinki in Europe; Ashburn or Hillsboro in the US; or Singapore.
+3. **Image**: **Ubuntu 26.04**.
+4. **Networking**: keep **Public IPv4** and **Public IPv6** on. You need the IPv4 address to open the site (Hetzner
+   charges a little extra for it).
 5. **SSH keys**: add yours if you want to log in from your own computer. Without one, Hetzner emails you a root
    password, which you'd only need for the browser console.
 6. **Cloud config**: paste the contents of

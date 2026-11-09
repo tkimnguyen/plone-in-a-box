@@ -77,8 +77,9 @@ the AWS access key in IAM when it's not needed; it doesn't expire by itself.
 
 In the AWS console (Plone Foundation account), region **US East (N. Virginia) us-east-1**:
 
-1. **S3 → Create bucket** named `plone-in-a-box-templates`. Under **Block Public Access settings for this bucket**,
-   untick **Block all public access** and confirm. Leave everything else as is.
+1. **S3 → Create bucket** in the **Global namespace**, named `plone-in-a-box-templates`. Under **Block Public Access
+   settings for this bucket**, untick only the two settings about bucket and access point **policies**, keep the
+   two about **ACLs** ticked, and confirm. Leave everything else as is (Object Ownership: ACLs disabled).
 2. Open the bucket → **Permissions → Bucket policy → Edit**, paste this, and save:
    ```json
    {

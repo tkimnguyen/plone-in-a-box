@@ -1,6 +1,9 @@
 2.6 (unreleased)
 ----------------
 
+- Fix: AWS deploys with Terraform failed since 2.2, because the provisioning
+  script grew past EC2's 16 KB user data limit. The user data is now
+  gzip-compressed. (The AWS console launcher wasn't affected.)
 - README: lead with the no-command-line route for each provider (Linode's
   StackScript form, the launcher pasted on DigitalOcean and AWS) and the
   browser consoles, and move Terraform and server administration into a

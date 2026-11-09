@@ -1,3 +1,12 @@
+2.6.1 (unreleased)
+------------------
+
+- Fix: AWS deploys with Terraform failed since 2.2, because the provisioning
+  script grew past EC2's 16 KB user data limit. The user data is now
+  gzip-compressed. (The console launcher and Launch Stack button weren't affected.)
+  [tkimnguyen]
+
+
 2.6 (2026-11-08)
 ----------------
 
@@ -7,9 +16,6 @@
   server, a security group and a fixed address (Elastic IP), and the server
   downloads the provisioning script from the release, like the launcher does.
   Deleting the stack removes everything. CI runs cfn-lint on the template.
-- Fix: AWS deploys with Terraform failed since 2.2, because the provisioning
-  script grew past EC2's 16 KB user data limit. The user data is now
-  gzip-compressed. (The console launcher and Launch Stack button weren't affected.)
 - README: lead with the no-command-line route for each provider (Linode's
   StackScript form, the launcher pasted on DigitalOcean and AWS) and the
   browser consoles, and move Terraform and server administration into a

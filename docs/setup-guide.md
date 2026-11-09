@@ -251,7 +251,7 @@ No command line is needed if you choose the admin password here. In the
    when it's ready.
 
 Forgot to set the password? You still don't need SSH: open the server and click the **Console** button (`>_`) at the
-top right. Log in as `root` (with the password Hetzner emailed you, or after **Rescue → Reset root password**), and run
+top right. Log in as `root` (with the password Hetzner emailed you, or after **Rescue → Reset Root Password**), and run
 `cat /root/plone-credentials.txt` to read the generated one, or `plone-reset-admin-password` to choose a new one.
 
 The server keeps its IPv4 address (a Primary IP) for as long as it exists, so you can point a domain at it.
@@ -369,7 +369,7 @@ need it.
 | Problem | Fix |
 | --- | --- |
 | `ssh: connect ... Operation timed out` on Linode | A Cloud Firewall is blocking port 22. Allow TCP 22, 80, 443, or detach it. |
-| Forgot the admin password | Log in to the server as root (SSH, or your provider's console: Linode **Launch LISH Console**, DigitalOcean **Access → Launch Droplet Console**, which needs no password; Hetzner **Console**) and run `sudo plone-reset-admin-password`, or `cat /root/plone-credentials.txt` if a password was generated and you never read it. Forgot the root password too? On Linode, power off and use **Reset Root Password**; on DigitalOcean, **Access → Reset root password**; on Hetzner, **Rescue → Reset root password**. |
+| Forgot the admin password | Log in to the server as root (SSH, or your provider's console: Linode **Launch LISH Console**, DigitalOcean **Access → Launch Droplet Console**, which needs no password; Hetzner **Console**) and run `sudo plone-reset-admin-password`, or `cat /root/plone-credentials.txt` if a password was generated and you never read it. Forgot the root password too? On Linode, power off and use **Reset Root Password**; on DigitalOcean, **Access → Reset root password**; on Hetzner, **Rescue → Reset Root Password**. |
 | The page says "Setup didn't finish" | It shows which step failed. Usually a temporary download problem: delete the server and deploy again. To see details, log in as root and read `/var/log/plone-in-a-box.log`. |
 | No setup page, or no `/root/plone-credentials.txt` after 15 minutes | Read `/var/log/plone-in-a-box.log` (or, if it's missing, `/var/log/cloud-init-output.log` on AWS, DigitalOcean and Hetzner), and check `sudo docker compose --project-directory /opt/plone ps`. |
 | Terraform: `Value for undeclared variable` | You're running an old configuration. `git pull`, then `terraform init -upgrade` in `src/aws/`. |

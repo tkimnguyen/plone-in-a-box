@@ -18,7 +18,7 @@ The launcher route, Terraform configuration, docs and test script are written (b
   location that has one (Hetzner API) for the Arm test.
 - [ ] Test deploys with `scripts/test-deploy.sh hetzner`, on an x86 and an Arm plan, and `terraform apply` from
   `src/hetzner/` once.
-- [ ] Check **Rescue → Reset root password** in the setup guide.
+- [x] Cloud Console labels in the setup guide checked against the real pages.
 
 ## Support custom Plone projects (e.g. from cookieplone)
 

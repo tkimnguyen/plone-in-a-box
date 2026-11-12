@@ -35,3 +35,15 @@ and would push setup well past ~10 minutes. Building in CI means users need a Gi
 registry and credentials before deploying, which breaks the no-command-line Linode flow. It would also fix
 Plone/Volto versions when the project is generated, add template churn to maintain, and overlap the existing
 nginx + Compose setup. Custom images as an option get most of the benefit without those costs.
+
+## To investigate
+
+- [ ] **OpenTelemetry.** Whether to offer tracing and metrics for the backend, frontend and nginx, and where
+  the data would go on a single small server.
+- [ ] **Other Plone best practices.** Review the box against current Plone deployment recommendations
+  (backups, monitoring, security headers, upgrades) and note any gaps.
+- [ ] **Volto Light Theme.** Whether it can be offered as an option, and whether that needs a custom
+  frontend image (see "Check frontend add-on support" above).
+- [ ] **A curated list of add-ons.** Suggest Plone and Volto add-ons that work on a box, for example
+  starting from [Awesome Volto](https://github.com/collective/awesome-volto). As of November 2026 it is
+  still maintained but changes rarely, mostly link fixes, so check entries before recommending them.

@@ -146,6 +146,6 @@ Next on the list: a **backend image setting**, for projects made with cookieplon
 
 ## Get started
 
-**github.com/tkimnguyen/plone-in-a-box**
+**github.com/collective/plone-in-a-box**
 
-Step-by-step instructions for each provider are in the setup guide.
+The official repository, in the Plone community's **collective** organization. Step-by-step instructions for each provider are in the setup guide.

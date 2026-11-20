@@ -38,6 +38,10 @@ Metadata:
           - Addons
           - FrontendImage
       - Label:
+          default: Updates
+        Parameters:
+          - AutoUpdate
+      - Label:
           default: Advanced (leave as is)
         Parameters:
           - PloneVersion
@@ -65,6 +69,8 @@ Metadata:
         default: Backend add-ons
       FrontendImage:
         default: Frontend image
+      AutoUpdate:
+        default: Automatic updates
       PloneVersion:
         default: Plone backend image tag
       VoltoVersion:
@@ -147,6 +153,13 @@ Parameters:
       A ready-made Plone in a Box image such as ghcr.io/collective/plone-in-a-box-frontend:19-vlt
       (Volto Light Theme; its backend add-on is installed and activated too), or your own. Leave empty
       for the standard Volto image.
+  AutoUpdate:
+    Type: String
+    Default: "yes"
+    AllowedValues: ["yes", "no"]
+    Description: >-
+      Install Plone, Volto and PostgreSQL patch releases every week, after a database backup, and undo
+      them if the site doesn't come back. With "no", run sudo plone-update on the server yourself.
   PloneVersion:
     Type: String
     Default: "6.2"
@@ -239,7 +252,8 @@ Resources:
             VOLTO_VERSION='${VoltoVersion}'
             ADDONS="$(d '${AddonsB64}')"
             FRONTEND_IMAGE="$(d '${FrontendImageB64}')"
-            export ADMIN_PASSWORD DOMAIN LETSENCRYPT_EMAIL SITE_TIMEZONE PLONE_VERSION VOLTO_VERSION ADDONS FRONTEND_IMAGE
+            AUTO_UPDATE='${AutoUpdate}'
+            export ADMIN_PASSWORD DOMAIN LETSENCRYPT_EMAIL SITE_TIMEZONE PLONE_VERSION VOLTO_VERSION ADDONS FRONTEND_IMAGE AUTO_UPDATE
             SCRIPT_URL='https://raw.githubusercontent.com/tkimnguyen/plone-in-a-box/${Release}/src/StackScript'
             SCRIPT=$(mktemp)
             if ! curl --fail --silent --show-error --location --retry 10 --retry-delay 5 --retry-all-errors \

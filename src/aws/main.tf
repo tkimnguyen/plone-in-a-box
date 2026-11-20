@@ -94,6 +94,12 @@ variable "frontend_image" {
   default     = ""
 }
 
+variable "auto_update" {
+  description = "Install Plone, Volto and PostgreSQL patch releases every week, after a database backup, and undo them if the site doesn't come back."
+  type        = bool
+  default     = true
+}
+
 variable "volume_size_gb" {
   description = "Size of the root disk in GB."
   type        = number
@@ -197,6 +203,7 @@ resource "aws_instance" "app_server" {
     "export VOLTO_VERSION=${jsonencode(var.volto_version)}",
     "export ADDONS=\"$(echo ${base64encode(var.addons)} | base64 -d)\"",
     "export FRONTEND_IMAGE=\"$(echo ${base64encode(var.frontend_image)} | base64 -d)\"",
+    "export AUTO_UPDATE=${var.auto_update ? "yes" : "no"}",
     file("${path.module}/../StackScript"),
   ]))
   user_data_replace_on_change = true

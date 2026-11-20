@@ -28,6 +28,11 @@
 #                          with --frontend-image: expect setup to use the
 #                          standard Volto image instead (a bad image name), and
 #                          check the credentials file says why
+#   --updates              also test plone-update fully: put the backend on an
+#                          older Plone patch release (PIAB_TEST_OLD_PLONE,
+#                          default 6.2.2), check that a failed update is undone
+#                          and then skipped, and that a real update installs
+#                          the newest one after a database backup
 #
 # "list" shows the test servers that exist; "cleanup" deletes all of them.
 # Only servers tagged piab-test are ever touched.
@@ -66,7 +71,7 @@ esac
 LINODE_STACKSCRIPT_LABEL=plone-in-a-box-test
 SSH_KEY="${PIAB_TEST_SSH_KEY:-$HOME/.ssh/piab_test_ed25519}"
 
-PROVIDER="" ACTION=deploy REF="" GENERATED=0 KEEP=0 ADDONS="" ADDONS_SKIPPED=0 FRONTEND_IMAGE="" FRONTEND_FALLBACK=0
+PROVIDER="" ACTION=deploy REF="" GENERATED=0 KEEP=0 ADDONS="" ADDONS_SKIPPED=0 FRONTEND_IMAGE="" FRONTEND_FALLBACK=0 UPDATES=0
 SERVER_ID="" IP="" FAILURES=0
 
 die() { echo "error: $*" >&2; exit 1; }
@@ -75,7 +80,7 @@ pass() { say "PASS  $*"; }
 fail() { say "FAIL  $*"; FAILURES=$((FAILURES + 1)); }
 check() { local what=$1; shift; if "$@" >/dev/null 2>&1; then pass "$what"; else fail "$what"; fi; }
 
-usage() { sed -n '3,34p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
+usage() { sed -n '3,39p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
 
 case "${1:-}" in
   linode|digitalocean|aws|hetzner) PROVIDER=$1 ;;
@@ -93,6 +98,7 @@ while (( $# )); do
     --expect-addons-skipped) ADDONS_SKIPPED=1 ;;
     --frontend-image) FRONTEND_IMAGE=${2:?--frontend-image needs a value}; shift ;;
     --expect-frontend-fallback) FRONTEND_FALLBACK=1 ;;
+    --updates) UPDATES=1 ;;
     *) usage ;;
   esac
   shift
@@ -583,6 +589,62 @@ if rssh 'test -e /var/run/reboot-required'; then
   say "NOTE  /var/run/reboot-required exists (updates released during setup can cause this)"
 else
   pass "no restart required"
+fi
+
+# --- Updates --------------------------------------------------------------------------
+
+# plone-update prints to the log and to us; keep its output with the notes.
+run_update() {  # run_update <log name> [environment]
+  local status=0
+  rssh "${2:-} plone-update" > "$WORK/$1" 2>&1 || status=$?
+  grep -E '\] (Up to date|Updated|Update failed|Not updated|Skipped|Backing up)' "$WORK/$1" | sed 's/^/      /' || true
+  return "$status"
+}
+backend_image() {
+  rssh "docker inspect -f '{{.Image}}' \$(docker compose --project-directory /opt/plone ps -q backend)"
+}
+motd_says() { rssh "/etc/update-motd.d/90-plone-in-a-box" | grep -q "$1"; }
+
+check "automatic updates are on (plone-update.timer)" rssh \
+  'systemctl is-enabled --quiet plone-update.timer && systemctl is-active --quiet plone-update.timer'
+check "credentials file mentions updates" rssh "grep -q '^Updates: .*automatically' /root/plone-credentials.txt"
+run_update update-check.log || true
+check "plone-update finds the site up to date" grep -q '\] Up to date' "$WORK/update-check.log"
+check "the login message shows the last update" motd_says 'last update: .*Up to date'
+
+if (( UPDATES )); then
+  OLD_PLONE=${PIAB_TEST_OLD_PLONE:-6.2.2}
+  current=$(rssh "sed -n 's/^PLONE_VERSION=//p' /opt/plone/.env")
+  say "Putting the backend on Plone $OLD_PLONE, as if the server were behind"
+  rssh "docker pull -q plone/plone-backend:$OLD_PLONE && docker tag plone/plone-backend:$OLD_PLONE plone/plone-backend:$current \
+    && docker compose --project-directory /opt/plone up -d --wait backend" >/dev/null 2>&1 || true
+  old_id=$(rssh "docker image inspect -f '{{.Id}}' plone/plone-backend:$OLD_PLONE")
+  check "the backend runs Plone $OLD_PLONE" test "$(backend_image)" = "$old_id"
+  wait_until "site works on Plone $OLD_PLONE" 300 login "$NEW_PASSWORD" || true
+
+  status=0
+  run_update update-rollback.log PLONE_UPDATE_HEALTH_TIMEOUT=5 || status=$?
+  check "an update the site doesn't come back from is undone (exit 1)" test "$status" = 1
+  check "after undoing it, the backend runs Plone $OLD_PLONE again" test "$(backend_image)" = "$old_id"
+  wait_until "site works after the undone update" 300 login "$NEW_PASSWORD" || true
+  check "the login message says it was undone" motd_says 'failed and was undone'
+
+  run_update update-skip.log || true
+  check "next time, the failed build is skipped" grep -q 'Skipped the new backend image' "$WORK/update-skip.log"
+  check "the backend still runs Plone $OLD_PLONE" test "$(backend_image)" = "$old_id"
+
+  rssh 'rm -f /var/lib/plone-in-a-box/failed-images'
+  status=0
+  run_update update.log || status=$?
+  new_id=$(rssh "docker image inspect -f '{{.Id}}' plone/plone-backend:$current")
+  check "plone-update installs the newer Plone (exit 0)" test "$status" = 0
+  check "it reports the versions" grep -q "Updated: Plone $OLD_PLONE" "$WORK/update.log"
+  check "the backend runs the newest plone/plone-backend:$current" test "$(backend_image)" = "$new_id" -a "$new_id" != "$old_id"
+  # shellcheck disable=SC2016 # expanded on the server
+  check "the database was backed up first" rssh \
+    'gzip -t "$(ls -1t /var/backups/plone/plone-*.sql.gz | head -1)" && test -s "$(ls -1t /var/backups/plone/plone-*.sql.gz | head -1)"'
+  wait_until "site works after the update" 300 login "$NEW_PASSWORD" || true
+  check "the login message shows the update" motd_says 'last update: .*Updated'
 fi
 
 # --- Restarts -------------------------------------------------------------------------

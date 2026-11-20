@@ -50,6 +50,10 @@ export ADDONS=''
 # backend add-on is installed and activated too), or your own. Leave empty for
 # the standard Volto image.
 export FRONTEND_IMAGE=''
+# Automatic updates: 'yes' installs Plone, Volto and PostgreSQL patch releases
+# every week, after a database backup, and undoes them if the site doesn't come
+# back. 'no' leaves updates to you (sudo plone-update).
+export AUTO_UPDATE='yes'
 
 # --- No need to edit below this line -----------------------------------------
 

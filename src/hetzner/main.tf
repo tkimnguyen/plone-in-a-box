@@ -158,7 +158,7 @@ resource "hcloud_server" "plone" {
     "export SITE_TIMEZONE=${jsonencode(var.site_timezone)}",
     "export PLONE_VERSION=${jsonencode(var.plone_version)}",
     "export VOLTO_VERSION=${jsonencode(var.volto_version)}",
-    "export ADDONS=${jsonencode(var.addons)}",
+    "export ADDONS=\"$(echo ${base64encode(var.addons)} | base64 -d)\"",
     file("${path.module}/../StackScript"),
   ])
 }

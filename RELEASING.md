@@ -29,7 +29,8 @@ release, and the public Linode StackScript is updated by hand.
    * Or let `scripts/test-deploy.sh linode --ref <branch>` (or `digitalocean`, `aws` or `hetzner`) do the test: it
      creates a server (1 GB on Linode and DigitalOcean, `t3.small` on AWS, CPX02 (1 GB) on Hetzner) with the launcher or StackScript from the branch,
      runs these checks plus a restart, and deletes the server (about 15 minutes). Add
-     `--generated-password` for the generated-password check. `scripts/test-deploy.sh cleanup linode` deletes any
+     `--generated-password` for the generated-password check, and `--addons collective.easyform` (plus, in a
+     second run, `--addons "collective.easyform no-such-package-xyz" --expect-addons-skipped`) if add-ons changed. `scripts/test-deploy.sh cleanup linode` deletes any
      test servers left behind. See [Automated test deploys](#automated-test-deploys) for the one-time setup.
 3. Merge the pull request.
 

@@ -17,6 +17,10 @@
 #   --addons "PKG ..."     install these backend add-ons, then check they are
 #                          offered in Site Setup, can be activated, and survive
 #                          recreating the backend and restarting the server
+#   --expect-addons-skipped
+#                          with --addons: expect setup to leave the add-ons out
+#                          (a misspelled or invalid name), and check the site
+#                          works without them and the credentials file says why
 #
 # "list" shows the test servers that exist; "cleanup" deletes all of them.
 # Only servers tagged piab-test are ever touched.
@@ -53,7 +57,7 @@ esac
 LINODE_STACKSCRIPT_LABEL=plone-in-a-box-test
 SSH_KEY="${PIAB_TEST_SSH_KEY:-$HOME/.ssh/piab_test_ed25519}"
 
-PROVIDER="" ACTION=deploy REF="" GENERATED=0 KEEP=0 ADDONS=""
+PROVIDER="" ACTION=deploy REF="" GENERATED=0 KEEP=0 ADDONS="" ADDONS_SKIPPED=0
 SERVER_ID="" IP="" FAILURES=0
 
 die() { echo "error: $*" >&2; exit 1; }
@@ -62,7 +66,7 @@ pass() { say "PASS  $*"; }
 fail() { say "FAIL  $*"; FAILURES=$((FAILURES + 1)); }
 check() { local what=$1; shift; if "$@" >/dev/null 2>&1; then pass "$what"; else fail "$what"; fi; }
 
-usage() { sed -n '3,23p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
+usage() { sed -n '3,27p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
 
 case "${1:-}" in
   linode|digitalocean|aws|hetzner) PROVIDER=$1 ;;
@@ -77,6 +81,7 @@ while (( $# )); do
     --generated-password) GENERATED=1 ;;
     --keep) KEEP=1 ;;
     --addons) ADDONS=${2:?--addons needs a value}; shift ;;
+    --expect-addons-skipped) ADDONS_SKIPPED=1 ;;
     *) usage ;;
   esac
   shift
@@ -213,6 +218,7 @@ say "Notes, passwords and logs: $WORK"
   [[ -z "$ADDONS" ]] || echo "add-ons: $ADDONS"
 } > "$WORK/notes.txt"
 [[ "$ADDONS" != *"'"* ]] || die "--addons can't contain a single quote"
+(( ! ADDONS_SKIPPED )) || [[ -n "$ADDONS" ]] || die "--expect-addons-skipped needs --addons"
 
 cleanup_on_exit() {
   local status=$?
@@ -475,7 +481,16 @@ check "the old password no longer works" old_password_rejected
 
 # --- Add-ons -------------------------------------------------------------------------
 
-if [[ -n "$ADDONS" ]]; then
+if (( ADDONS_SKIPPED )); then
+  grep '^\[plone-in-a-box\]' "$WORK/setup.log" | grep -i 'add-ons' | sed 's/^/      /' || true
+  check "setup log says the add-ons were left out" \
+    grep -qE "^\[plone-in-a-box\] (Not installing the backend add-ons|The backend add-ons couldn't be installed)" "$WORK/setup.log"
+  check "credentials file says the add-ons weren't installed" \
+    rssh "grep -qE 'add-ons .* (were not|couldn.t be) installed' /root/plone-credentials.txt"
+  check "no add-ons are configured in /opt/plone/.env" rssh "grep -qx \"ADDONS=''\" /opt/plone/.env"
+  check "the backend container has no add-ons" \
+    rssh "test -z \"\$(docker compose --project-directory /opt/plone exec -T backend printenv ADDONS)\""
+elif [[ -n "$ADDONS" ]]; then
   grep '^\[plone-in-a-box\]' "$WORK/setup.log" | grep -i 'add-ons' | sed 's/^/      /' || true
   check "add-ons are offered in Site Setup > Add-ons" addons_listed "$NEW_PASSWORD"
   check "add-ons can be activated" addons_activate "$NEW_PASSWORD"
@@ -514,7 +529,7 @@ wait_until "SSH is back after the restart" 600 rssh true || exit 1
 wait_until "site works after the restart" 600 login "$NEW_PASSWORD" || true
 check "setup didn't run again after the restart" test "$(count_in_log 'Continuing setup')" = "$continued"
 check "setup finished exactly once" test "$(count_in_log 'Finished')" = 1
-if [[ -n "$ADDONS" ]]; then
+if [[ -n "$ADDONS" ]] && (( ! ADDONS_SKIPPED )); then
   check "add-ons are still active after the restarts" addons_active "$NEW_PASSWORD"
 fi
 

@@ -18,7 +18,8 @@
   skipped. Reports go to the login message, and by email through the site's own mail settings.
 - [x] **Plone hotfixes**, documented (setup guide, "Updates").
 - [ ] Offer `plone-update` to servers set up before 2.12 (a one-line installer?).
-- [ ] Email the report when the site has no mail settings, for example to `LETSENCRYPT_EMAIL`, through a relay?
+- [x] **Notification URL** (2.12): ntfy, or Slack, Discord, Google Chat and Mattermost webhooks.
+- [ ] Microsoft Teams: its Workflows webhooks need an Adaptive Card, not plain text or `{"text": ...}`.
 
 ## Support custom Plone projects (e.g. from cookieplone)
 

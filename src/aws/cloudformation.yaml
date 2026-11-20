@@ -41,6 +41,7 @@ Metadata:
           default: Updates
         Parameters:
           - AutoUpdate
+          - NotifyUrl
       - Label:
           default: Advanced (leave as is)
         Parameters:
@@ -71,6 +72,8 @@ Metadata:
         default: Frontend image
       AutoUpdate:
         default: Automatic updates
+      NotifyUrl:
+        default: Notification URL
       PloneVersion:
         default: Plone backend image tag
       VoltoVersion:
@@ -160,6 +163,15 @@ Parameters:
     Description: >-
       Install Plone, Volto and PostgreSQL patch releases every week, after a database backup, and undo
       them if the site doesn't come back. With "no", run sudo plone-update on the server yourself.
+  NotifyUrl:
+    Type: String
+    Default: ""
+    NoEcho: true
+    AllowedPattern: '^(https://[^\s"]*)?$'
+    ConstraintDescription: Must start with https://.
+    Description: >-
+      Optional. Update reports are posted here, for example https://ntfy.sh/a-long-random-topic for the ntfy
+      phone app, or a Slack, Discord, Google Chat or Mattermost incoming webhook URL. Keep it private.
   PloneVersion:
     Type: String
     Default: "6.2"
@@ -253,7 +265,8 @@ Resources:
             ADDONS="$(d '${AddonsB64}')"
             FRONTEND_IMAGE="$(d '${FrontendImageB64}')"
             AUTO_UPDATE='${AutoUpdate}'
-            export ADMIN_PASSWORD DOMAIN LETSENCRYPT_EMAIL SITE_TIMEZONE PLONE_VERSION VOLTO_VERSION ADDONS FRONTEND_IMAGE AUTO_UPDATE
+            NOTIFY_URL="$(d '${NotifyUrlB64}')"
+            export ADMIN_PASSWORD DOMAIN LETSENCRYPT_EMAIL SITE_TIMEZONE PLONE_VERSION VOLTO_VERSION ADDONS FRONTEND_IMAGE AUTO_UPDATE NOTIFY_URL
             SCRIPT_URL='https://raw.githubusercontent.com/tkimnguyen/plone-in-a-box/${Release}/src/StackScript'
             SCRIPT=$(mktemp)
             if ! curl --fail --silent --show-error --location --retry 10 --retry-delay 5 --retry-all-errors \
@@ -268,6 +281,7 @@ Resources:
             TimezoneB64: !Base64 {Ref: SiteTimezone}
             AddonsB64: !Base64 {Ref: Addons}
             FrontendImageB64: !Base64 {Ref: FrontendImage}
+            NotifyUrlB64: !Base64 {Ref: NotifyUrl}
 
   # A fixed address, so the site keeps the same IP after the server is stopped
   # and started, and DNS for a domain only needs setting once.

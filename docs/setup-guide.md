@@ -54,6 +54,8 @@ locations are in Germany and Finland. All four offer automatic server backups fo
      (see [Themes and frontend images](#themes-and-frontend-images)).
    * **Automatic updates**: `yes` (the default) installs Plone, Volto and PostgreSQL patch releases every week; see
      [Updates](#updates).
+   * **Notification URL**, where update reports go, for example `https://ntfy.sh/<a long random topic>`; see
+     [Updates](#updates).
 4. Choose **Ubuntu 26.04 LTS** as the image (24.04 also works), a region, and a plan: a 1 GB **Nanode** is enough
    for a small site, 2 GB or more for a busier one.
 5. Set a root password, add your **SSH key**, and click **Create Linode**.
@@ -90,7 +92,8 @@ No command line is needed.
    * **SSH key pair** and **Allow SSH from**: optional, only if you want to log in from your own computer.
    * **Backend add-ons** and **Frontend image**: optional (see [Add-ons](#add-ons) and
      [Themes and frontend images](#themes-and-frontend-images)).
-   * **Automatic updates**: `yes` (the default) installs patch releases every week; see [Updates](#updates).
+   * **Automatic updates**: `yes` (the default) installs patch releases every week, and **Notification URL**, where
+     reports about them go; see [Updates](#updates).
    * Leave the **Advanced** settings as they are.
 4. Click **Create stack**. After a minute or two the stack shows `CREATE_COMPLETE`.
 5. Open the **Outputs** tab and click the **SiteURL**. You'll see the setup progress page, which turns into your
@@ -169,6 +172,7 @@ ssh_public_key_path = "~/.ssh/id_rsa.pub"
 # addons            = "collective.easyform"
 # frontend_image    = "ghcr.io/collective/plone-in-a-box-frontend:19-vlt"
 # auto_update       = false  # weekly patch releases are on by default
+# notify_url        = "https://ntfy.sh/a-long-random-topic"
 ```
 
 Other variables (region, instance type, SSH source addresses, versions, disk size) are described at the top of
@@ -349,6 +353,11 @@ database regularly:
 sudo docker compose --project-directory /opt/plone exec -T db pg_dump -U plone plone | gzip > plone-$(date +%F).sql.gz
 ```
 
+**Knowing when the site is down**: the server can't tell you that it's down itself, so let something outside check
+the site's address every few minutes and alert you. DigitalOcean has this built in (**Monitoring → Uptime**, then
+add a check for the site's URL, with an alert to your email). On other providers, use an outside uptime service,
+many of which have a free plan.
+
 ## Updates
 
 A box has two kinds of software, and each one updates differently.
@@ -374,8 +383,14 @@ site comes back. If it doesn't, it goes back to the previous images, and skips t
 ready-made frontend image whose new build needs a different backend add-on is left for you to update (see
 [Themes and frontend images](#themes-and-frontend-images)). The site is down for a minute or two during an update.
 
-You hear about it in two places:
+You hear about it in up to three places:
 
+* **At the notification URL**, if you set one when you created the server. The easiest is
+  [ntfy](https://ntfy.sh): install the ntfy app on your phone, subscribe to a topic with a long random name that
+  only you know (anyone who knows it can read the messages), and use `https://ntfy.sh/<that topic>` as the
+  **Notification URL**. An incoming webhook URL from Slack, Discord, Google Chat or Mattermost works too, to post
+  the reports in a team channel. Setup sends a first notice when the site is ready, so you know right away that it
+  works. To change the URL later, edit `/var/lib/plone-in-a-box/notify-url` on the server (only root can read it).
 * **By email**, if the site can send email: set the **Site 'From' address** and the mail server in **Site Setup →
   Mail** (Plone needs these anyway, for password-reset emails). The report goes to that address, after anything
   but a week with nothing new. Most cloud providers block sending email directly, so use your email provider's

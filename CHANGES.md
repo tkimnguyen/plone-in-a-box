@@ -12,6 +12,12 @@
   address when Site Setup > Mail is set up; it also says when a newer Plone
   release is out, which stays a manual upgrade. sudo plone-update runs it by
   hand. scripts/test-deploy.sh --updates tests it.
+- Notification URL: an optional setting (NOTIFY_URL, the NotifyUrl
+  parameter, the notify_url Terraform variable) where update reports are
+  posted: ntfy (https://ntfy.sh/<topic>) for phone notifications, or a Slack,
+  Discord, Google Chat or Mattermost webhook. Setup sends a first notice when
+  the site is ready. Only root can read the URL on the server.
+- Docs: knowing when the site is down, with an uptime check.
 - Docs: building your own frontend image with other Volto add-ons (fork, add
   an entry to the workflow, and GitHub Actions builds and publishes it), and
   using a custom backend image on a running server, for packages that aren't

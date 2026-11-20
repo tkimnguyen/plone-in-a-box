@@ -54,6 +54,10 @@ export FRONTEND_IMAGE=''
 # every week, after a database backup, and undoes them if the site doesn't come
 # back. 'no' leaves updates to you (sudo plone-update).
 export AUTO_UPDATE='yes'
+# Notification URL, optional: update reports are posted here, for example
+# 'https://ntfy.sh/a-long-random-topic' (the ntfy phone app), or a Slack,
+# Discord, Google Chat or Mattermost incoming webhook URL. Keep it private.
+export NOTIFY_URL=''
 
 # --- No need to edit below this line -----------------------------------------
 

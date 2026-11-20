@@ -111,6 +111,13 @@ variable "frontend_image" {
   default     = ""
 }
 
+variable "notify_url" {
+  description = "Notification URL, optional: update reports are posted here, for example https://ntfy.sh/a-long-random-topic, or a Slack, Discord, Google Chat or Mattermost webhook."
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
 variable "auto_update" {
   description = "Install Plone, Volto and PostgreSQL patch releases every week, after a database backup, and undo them if the site doesn't come back."
   type        = bool
@@ -154,6 +161,7 @@ resource "digitalocean_droplet" "plone" {
     "export ADDONS=\"$(echo ${base64encode(var.addons)} | base64 -d)\"",
     "export FRONTEND_IMAGE=\"$(echo ${base64encode(var.frontend_image)} | base64 -d)\"",
     "export AUTO_UPDATE=${var.auto_update ? "yes" : "no"}",
+    "export NOTIFY_URL=\"$(echo ${base64encode(var.notify_url)} | base64 -d)\"",
     file("${path.module}/../StackScript"),
   ])
 }

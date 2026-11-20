@@ -584,8 +584,10 @@ json() { python3 -c 'import json, sys; print(json.dumps({sys.argv[1]: sys.argv[2
 case "$url" in
   https://discord.com/api/webhooks/*|https://discordapp.com/api/webhooks/*)
     body=$(json content "**${title}**"$'\n'"${message:0:1800}") type=application/json ;;
-  https://hooks.slack.com/*|https://chat.googleapis.com/*|https://*/hooks/*)
+  https://hooks.slack.com/*|https://chat.googleapis.com/*)
     body=$(json text "*${title}*"$'\n'"${message}") type=application/json ;;
+  https://*/hooks/*)  # Mattermost
+    body=$(json text "**${title}**"$'\n'"${message}") type=application/json ;;
   *)
     body=$message type="text/plain; charset=utf-8" ;;
 esac
@@ -775,9 +777,14 @@ fi
 say "The site didn't come back; going back to the previous images"
 for s in "${CHANGED[@]}"; do echo "${NEW[$s]}" >> "$STATE_DIR/failed-images"; done
 put_back
+if (( ${#CHANGED[@]} == 1 )); then
+  undone="the new ${CHANGED[0]} image, so it runs the previous one again; that build is skipped"
+else
+  undone="the new ${CHANGED[*]} images, so it runs the previous ones again; those builds are skipped"
+fi
 if compose up -d --wait --wait-timeout "$ROLLBACK_TIMEOUT" && site_ok; then
   finish 1 "Update failed and was undone: back on ${BEFORE}" \
-    "$(printf '%s\n' "The site didn't come back with the new ${CHANGED[*]} images, so it runs the previous ones again; those builds are skipped from now on. The reason is in ${LOG_FILE}." "Database backup from before the update: ${DUMP}")"
+    "$(printf '%s\n' "The site didn't come back with ${undone} from now on. The reason is in ${LOG_FILE}." "Database backup from before the update: ${DUMP}")"
 fi
 finish 2 "Update failed, and going back failed too: the site may be down" \
   "$(printf '%s\n' "Check: sudo docker compose --project-directory ${APP_DIR} ps" "Database backup from before the update: ${DUMP}" "The log is in ${LOG_FILE}.")"

@@ -391,7 +391,7 @@ START=$SECONDS
 
 # --- Helpers for the checks ----------------------------------------------------
 
-SSH_OPTS=(-i "$SSH_KEY" -o IdentitiesOnly=yes -o BatchMode=yes -o ConnectTimeout=10 -o LogLevel=ERROR
+SSH_OPTS=(-i "$SSH_KEY" -o IdentitiesOnly=yes -o BatchMode=yes -o ConnectTimeout=10 -o ServerAliveInterval=15 -o ServerAliveCountMax=4 -o LogLevel=ERROR
           -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile="$WORK/known_hosts")
 # Linode and DigitalOcean log in as root; AWS as ubuntu, with sudo.
 # Commands are expanded locally on purpose (they include values from here).
@@ -484,7 +484,11 @@ count_in_log() { rssh "grep -c '^\[plone-in-a-box\] $1' /var/log/plone-in-a-box.
 # --- Setup -------------------------------------------------------------------------
 
 wait_until "progress page is up" 600 progress_page_up || true
-wait_until "setup finished or failed" 2400 setup_done_or_failed || exit 1
+if ! wait_until "setup finished or failed" 2400 setup_done_or_failed; then
+  rssh 'cat /var/log/plone-in-a-box.log' > "$WORK/setup.log" 2>/dev/null \
+    && say "Setup log so far saved to $WORK/setup.log; last lines:" && tail -5 "$WORK/setup.log" | sed 's/^/      /'
+  exit 1
+fi
 rssh 'cat /var/log/plone-in-a-box.log' > "$WORK/setup.log" 2>/dev/null || true
 if setup_failed; then
   fail "setup failed; log saved to $WORK/setup.log"

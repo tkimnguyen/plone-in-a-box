@@ -17,6 +17,11 @@
   posted: ntfy (https://ntfy.sh/<topic>) for phone notifications, or a Slack,
   Discord, Google Chat or Mattermost webhook. Setup sends a first notice when
   the site is ready. Only root can read the URL on the server.
+- Fix: Terraform on Hetzner would fail, because the provisioning script grew
+  past Hetzner's 32 KiB user data limit; on AWS it was close to EC2's 16 KB.
+  The DigitalOcean and Hetzner configurations now send the script compressed
+  and unpack it on the server, and the AWS one leaves out its comment lines
+  before compressing. CI checks the sizes.
 - Docs: knowing when the site is down, with an uptime check.
 - Docs: building your own frontend image with other Volto add-ons (fork, add
   an entry to the workflow, and GitHub Actions builds and publishes it), and

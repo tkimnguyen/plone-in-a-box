@@ -22,6 +22,16 @@ jobs:
             | grep -v "plone-in-a-box/$release/src/StackScript" || true)
           if [ -n "$bad" ]; then echo "Launchers in the docs download another release:"; echo "$bad"; exit 1; fi
 
+      - name: The script fits in the Terraform user data
+        run: |
+          # src/*/main.tf embed src/StackScript compressed. EC2 allows 16384 bytes
+          # (sent without comment lines), Hetzner 32768 (as base64); leave room for
+          # the settings.
+          aws=$(grep -vE '^[[:space:]]*#[^!]' src/StackScript | gzip -9 | wc -c)
+          hetzner=$(gzip -9 < src/StackScript | base64 -w0 | wc -c)
+          echo "AWS: $aws of 15000 bytes, Hetzner: $hetzner of 30000 bytes"
+          test "$aws" -lt 15000 && test "$hetzner" -lt 30000
+
   terraform:
     runs-on: ubuntu-latest
     strategy:

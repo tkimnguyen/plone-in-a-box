@@ -642,7 +642,7 @@ versions() {
   plone=$(compose exec -T backend /app/bin/python -c \
     'from importlib.metadata import version; print(version("Products.CMFPlone"))' 2>/dev/null) || plone="?"
   volto=$(compose exec -T frontend node -p 'require("@plone/volto/package.json").version' 2>/dev/null) || volto="?"
-  pg=$(compose exec -T db postgres --version 2>/dev/null | awk '{print $NF}') || pg="?"
+  pg=$(compose exec -T db postgres --version 2>/dev/null | awk '{print $3}') || pg="?"
   echo "Plone ${plone:-?}, Volto ${volto:-?}, PostgreSQL ${pg:-?}"
 }
 

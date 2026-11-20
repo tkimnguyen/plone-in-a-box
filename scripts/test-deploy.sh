@@ -33,6 +33,9 @@
 #                          default 6.2.2), check that a failed update is undone
 #                          and then skipped, and that a real update installs
 #                          the newest one after a database backup
+#   --notify               set the notification URL to a new random topic on
+#                          ntfy.sh, and check the notices arrive there (the
+#                          setup notice, and with --updates the reports)
 #
 # "list" shows the test servers that exist; "cleanup" deletes all of them.
 # Only servers tagged piab-test are ever touched.
@@ -71,7 +74,7 @@ esac
 LINODE_STACKSCRIPT_LABEL=plone-in-a-box-test
 SSH_KEY="${PIAB_TEST_SSH_KEY:-$HOME/.ssh/piab_test_ed25519}"
 
-PROVIDER="" ACTION=deploy REF="" GENERATED=0 KEEP=0 ADDONS="" ADDONS_SKIPPED=0 FRONTEND_IMAGE="" FRONTEND_FALLBACK=0 UPDATES=0
+PROVIDER="" ACTION=deploy REF="" GENERATED=0 KEEP=0 ADDONS="" ADDONS_SKIPPED=0 FRONTEND_IMAGE="" FRONTEND_FALLBACK=0 UPDATES=0 NOTIFY_URL=""
 SERVER_ID="" IP="" FAILURES=0
 
 die() { echo "error: $*" >&2; exit 1; }
@@ -80,7 +83,7 @@ pass() { say "PASS  $*"; }
 fail() { say "FAIL  $*"; FAILURES=$((FAILURES + 1)); }
 check() { local what=$1; shift; if "$@" >/dev/null 2>&1; then pass "$what"; else fail "$what"; fi; }
 
-usage() { sed -n '3,39p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
+usage() { sed -n '3,42p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
 
 case "${1:-}" in
   linode|digitalocean|aws|hetzner) PROVIDER=$1 ;;
@@ -99,6 +102,7 @@ while (( $# )); do
     --frontend-image) FRONTEND_IMAGE=${2:?--frontend-image needs a value}; shift ;;
     --expect-frontend-fallback) FRONTEND_FALLBACK=1 ;;
     --updates) UPDATES=1 ;;
+    --notify) NOTIFY_URL="https://ntfy.sh/piab-test-$(openssl rand -hex 12)" ;;
     *) usage ;;
   esac
   shift
@@ -234,6 +238,7 @@ say "Notes, passwords and logs: $WORK"
   (( GENERATED )) && echo "admin password: generated on the server" || echo "admin password: $ADMIN_PASSWORD"
   [[ -z "$ADDONS" ]] || echo "add-ons: $ADDONS"
   [[ -z "$FRONTEND_IMAGE" ]] || echo "frontend image: $FRONTEND_IMAGE"
+  [[ -z "$NOTIFY_URL" ]] || echo "notification URL: $NOTIFY_URL"
 } > "$WORK/notes.txt"
 [[ "$ADDONS" != *"'"* ]] || die "--addons can't contain a single quote"
 (( ! ADDONS_SKIPPED )) || [[ -n "$ADDONS" ]] || die "--expect-addons-skipped needs --addons"
@@ -264,6 +269,7 @@ launcher() {
       "export ADMIN_PASSWORD='${ADMIN_PASSWORD:-CHANGE-ME}'" \
       ${ADDONS:+"export ADDONS='$ADDONS'"} \
       ${FRONTEND_IMAGE:+"export FRONTEND_IMAGE='$FRONTEND_IMAGE'"} \
+      ${NOTIFY_URL:+"export NOTIFY_URL='$NOTIFY_URL'"} \
       "curl -fsSL --retry 10 --retry-all-errors -o /root/plone-in-a-box.sh https://raw.githubusercontent.com/tkimnguyen/plone-in-a-box/$SHA/src/StackScript && bash /root/plone-in-a-box.sh"
     return
   fi
@@ -271,11 +277,14 @@ launcher() {
     | sed -e "s/^export ADMIN_PASSWORD=''$/export ADMIN_PASSWORD='$ADMIN_PASSWORD'/" \
           -e "s|^export ADDONS=''$|export ADDONS='${ADDONS//&/\\&}'|" \
           -e "s|^export FRONTEND_IMAGE=''$|export FRONTEND_IMAGE='$FRONTEND_IMAGE'|" \
+          -e "s|^export NOTIFY_URL=''$|export NOTIFY_URL='$NOTIFY_URL'|" \
           -e "s/^PIAB_RELEASE='[^']*'$/PIAB_RELEASE='$SHA'/")
   grep -q "^PIAB_RELEASE='$SHA'$" <<<"$text" || die "couldn't set PIAB_RELEASE in src/user-data.sh"
   [[ -z "$ADDONS" ]] || grep -qF "export ADDONS='$ADDONS'" <<<"$text" || die "couldn't set ADDONS in src/user-data.sh"
   [[ -z "$FRONTEND_IMAGE" ]] || grep -qF "export FRONTEND_IMAGE='$FRONTEND_IMAGE'" <<<"$text" \
     || die "couldn't set FRONTEND_IMAGE in src/user-data.sh"
+  [[ -z "$NOTIFY_URL" ]] || grep -qF "export NOTIFY_URL='$NOTIFY_URL'" <<<"$text" \
+    || die "couldn't set NOTIFY_URL in src/user-data.sh"
   printf '%s\n' "$text"
 }
 
@@ -294,10 +303,11 @@ if [[ "$PROVIDER" == linode ]]; then
   body=$(jq -nc --arg region "$REGION" --arg label "$NAME" --arg tag "$TAG" --arg root "$ROOT_PASS" \
       --arg key "$(cat "$SSH_KEY.pub")" --argjson ss "$STACKSCRIPT_ID" --arg pw "$ADMIN_PASSWORD" \
       --arg fw "${PIAB_LINODE_FIREWALL_ID:-}" --arg ubuntu "$UBUNTU" --arg addons "$ADDONS" \
-      --arg frontend "$FRONTEND_IMAGE" --arg type "${PIAB_LINODE_TYPE:-g6-nanode-1}" \
+      --arg frontend "$FRONTEND_IMAGE" --arg type "${PIAB_LINODE_TYPE:-g6-nanode-1}" --arg notify "$NOTIFY_URL" \
       '{region: $region, type: $type, image: ("linode/ubuntu" + $ubuntu), label: $label, tags: [$tag],
         root_pass: $root, authorized_keys: [$key], stackscript_id: $ss,
-        stackscript_data: {ADMIN_PASSWORD: $pw, ADDONS: $addons, FRONTEND_IMAGE: $frontend}, booted: true}
+        stackscript_data: {ADMIN_PASSWORD: $pw, ADDONS: $addons, FRONTEND_IMAGE: $frontend, NOTIFY_URL: $notify},
+        booted: true}
        + (if $fw == "" then {} else {firewall_id: ($fw | tonumber)} end)')
   created=$(api POST /linode/instances "$body")
   SERVER_ID=$(jq -r '.id' <<<"$created")
@@ -604,6 +614,17 @@ backend_image() {
   rssh "docker inspect -f '{{.Image}}' \$(docker compose --project-directory /opt/plone ps -q backend)"
 }
 motd_says() { rssh "/etc/update-motd.d/90-plone-in-a-box" | grep -q "$1"; }
+# A notice with this text in its title arrived at the ntfy topic.
+notice_arrived() {
+  curl -s -m 30 "$NOTIFY_URL/json?poll=1&since=all" | jq -r 'select(.event == "message") | .title' | grep -q "$1"
+}
+
+if [[ -n "$NOTIFY_URL" ]]; then
+  check "the notice that the site is ready arrived" notice_arrived 'Plone in a Box is ready'
+  check "credentials file mentions the notices" rssh "grep -q '^Notices: .*first notice was sent' /root/plone-credentials.txt"
+  check "only root can read the notification URL" test "$(rssh 'stat -c %a /var/lib/plone-in-a-box/notify-url')" = 600
+  check "the setup log doesn't contain the notification URL" rssh "! grep -qF '$NOTIFY_URL' /var/log/plone-in-a-box.log"
+fi
 
 check "automatic updates are on (plone-update.timer)" rssh \
   'systemctl is-enabled --quiet plone-update.timer && systemctl is-active --quiet plone-update.timer'
@@ -645,6 +666,10 @@ if (( UPDATES )); then
     'gzip -t "$(ls -1t /var/backups/plone/plone-*.sql.gz | head -1)" && test -s "$(ls -1t /var/backups/plone/plone-*.sql.gz | head -1)"'
   wait_until "site works after the update" 300 login "$NEW_PASSWORD" || true
   check "the login message shows the update" motd_says 'last update: .*Updated'
+  if [[ -n "$NOTIFY_URL" ]]; then
+    check "the report about the undone update arrived" notice_arrived 'Update failed and was undone'
+    check "the report about the update arrived" notice_arrived 'Plone in a Box: Updated'
+  fi
 fi
 
 # --- Restarts -------------------------------------------------------------------------

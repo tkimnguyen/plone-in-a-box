@@ -31,7 +31,8 @@
 # (piab-aws-access-key-id and piab-aws-secret-access-key), or from the usual
 # AWS_PROFILE / AWS_ACCESS_KEY_ID settings. The test servers get the SSH key
 # ~/.ssh/piab_test_ed25519 (or PIAB_TEST_SSH_KEY). Optional: PIAB_TEST_REGION,
-# PIAB_LINODE_FIREWALL_ID, PIAB_LINODE_TYPE (default g6-nanode-1), PIAB_AWS_INSTANCE_TYPE (default t3.small),
+# PIAB_LINODE_FIREWALL_ID, PIAB_LINODE_TYPE (default g6-nanode-1), PIAB_DO_SIZE (default s-1vcpu-1gb),
+# PIAB_AWS_INSTANCE_TYPE (default t3.small),
 # PIAB_TEST_UBUNTU (Ubuntu release: 26.04, the default, or 24.04),
 # PIAB_HETZNER_SERVER_TYPE (default cpx02; an Arm type, cax..., works too),
 # PIAB_TEST_LAUNCHER=short (DigitalOcean, AWS, Hetzner: use the three-line
@@ -307,8 +308,8 @@ elif [[ "$PROVIDER" == digitalocean ]]; then
   fi
   user_data=$(launcher)
   body=$(jq -nc --arg region "$REGION" --arg name "$NAME" --arg tag "$TAG" --arg fp "$fingerprint" \
-      --arg ud "$user_data" --arg ubuntu "$UBUNTU" \
-      '{name: $name, region: $region, size: "s-1vcpu-1gb", image: ("ubuntu-" + ($ubuntu | sub("\\."; "-")) + "-x64"),
+      --arg ud "$user_data" --arg ubuntu "$UBUNTU" --arg size "${PIAB_DO_SIZE:-s-1vcpu-1gb}" \
+      '{name: $name, region: $region, size: $size, image: ("ubuntu-" + ($ubuntu | sub("\\."; "-")) + "-x64"),
         ssh_keys: [$fp], tags: [$tag], user_data: $ud}')
   SERVER_ID=$(api POST /droplets "$body" | jq -r '.droplet.id')
   deadline=$((SECONDS + 300))

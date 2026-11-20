@@ -36,6 +36,8 @@
 #   --notify               set the notification URL to a new random topic on
 #                          ntfy.sh, and check the notices arrive there (the
 #                          setup notice, and with --updates the reports)
+#   --notify-url URL       like --notify, with this notification URL (an ntfy
+#                          topic you're subscribed to, to watch the notices)
 #
 # "list" shows the test servers that exist; "cleanup" deletes all of them.
 # Only servers tagged piab-test are ever touched.
@@ -83,7 +85,7 @@ pass() { say "PASS  $*"; }
 fail() { say "FAIL  $*"; FAILURES=$((FAILURES + 1)); }
 check() { local what=$1; shift; if "$@" >/dev/null 2>&1; then pass "$what"; else fail "$what"; fi; }
 
-usage() { sed -n '3,42p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
+usage() { sed -n '3,44p' "$0" | sed 's/^# \{0,1\}//'; exit 2; }
 
 case "${1:-}" in
   linode|digitalocean|aws|hetzner) PROVIDER=$1 ;;
@@ -103,6 +105,10 @@ while (( $# )); do
     --expect-frontend-fallback) FRONTEND_FALLBACK=1 ;;
     --updates) UPDATES=1 ;;
     --notify) NOTIFY_URL="https://ntfy.sh/piab-test-$(openssl rand -hex 12)" ;;
+    --notify-url)
+      NOTIFY_URL=${2:?--notify-url needs a value}; shift
+      [[ "$NOTIFY_URL" == https://* ]] || NOTIFY_URL="https://$NOTIFY_URL"
+      [[ "$NOTIFY_URL" =~ ^https://[A-Za-z0-9.-]+(:[0-9]+)?(/[^[:space:]\'\"]*)?$ ]] || die "--notify-url: not a URL" ;;
     *) usage ;;
   esac
   shift

@@ -110,6 +110,9 @@ Details: [setup guide, Hetzner](docs/setup-guide.md#console-deployment-easiest-2
   [Add-ons](docs/setup-guide.md#add-ons).
 * **Volto Light Theme:** set the frontend image to `ghcr.io/collective/plone-in-a-box-frontend:19-vlt` when
   deploying; see [Themes and frontend images](docs/setup-guide.md#themes-and-frontend-images).
+* **Updates:** Ubuntu installs its security updates by itself, and every week the server installs Plone, Volto and
+  PostgreSQL patch releases, after a database backup, and undoes them if the site doesn't come back. You get a
+  report by email if the site's mail is set up; see [Updates](docs/setup-guide.md#updates).
 
 The setup guide also covers [backups, upgrades and troubleshooting](docs/setup-guide.md).
 

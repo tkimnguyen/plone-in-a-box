@@ -1,6 +1,17 @@
 2.12 (unreleased)
 -----------------
 
+- Automatic updates: a new setting (the Linode StackScript's "Automatic
+  updates" field, AUTO_UPDATE in src/user-data.sh, the Launch Stack template's
+  AutoUpdate parameter and the Terraform auto_update variable), on by default.
+  Every week the server installs newer images of the same Plone, Volto and
+  PostgreSQL versions (patch releases and security fixes). If there's
+  anything new, it first saves a database dump in /var/backups/plone, then
+  checks that the site comes back, and goes back to the previous images if it
+  doesn't. The result is in the login message, and is emailed to the site's
+  address when Site Setup > Mail is set up; it also says when a newer Plone
+  release is out, which stays a manual upgrade. sudo plone-update runs it by
+  hand. scripts/test-deploy.sh --updates tests it.
 - Docs: building your own frontend image with other Volto add-ons (fork, add
   an entry to the workflow, and GitHub Actions builds and publishes it), and
   using a custom backend image on a running server, for packages that aren't

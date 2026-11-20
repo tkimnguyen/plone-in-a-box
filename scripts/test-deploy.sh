@@ -42,8 +42,9 @@
 # Linode deploys use the private StackScript "plone-in-a-box-test", which this
 # script overwrites with src/StackScript from REF. DigitalOcean, AWS and Hetzner deploys
 # paste src/user-data.sh from REF as user data, set to download src/StackScript
-# from the same commit. On AWS, the script also creates (once) a key pair and a
-# security group named piab-test in the default VPC, allowing SSH, HTTP and
+# from the same commit. On AWS, the script also creates (once) a key pair named
+# piab-test-<fingerprint> for this computer's key, and a security group named
+# piab-test in the default VPC, allowing SSH, HTTP and
 # HTTPS.
 
 set -euo pipefail
@@ -329,9 +330,16 @@ else
                 Name=state,Values=available Name=virtualization-type,Values=hvm \
     | jq -r '.Images | sort_by(.CreationDate) | last | .ImageId // empty')
   [[ -n "$ami" ]] || die "couldn't find the Ubuntu $UBUNTU AMI in $AWS_DEFAULT_REGION"
-  if ! ec2 describe-key-pairs --key-names "$TAG" >/dev/null 2>&1; then
-    say "Adding the test SSH key to AWS as key pair $TAG"
-    ec2 import-key-pair --key-name "$TAG" --public-key-material "fileb://$SSH_KEY.pub" \
+  # One key pair per computer, named after its key's fingerprint (as on Hetzner).
+  key_name="$TAG-$(ssh-keygen -l -E md5 -f "$SSH_KEY.pub" | awk '{print $2}' | sed 's/^MD5://' | tr -d : | cut -c1-8)"
+  local_fp=$(ssh-keygen -l -E sha256 -f "$SSH_KEY.pub" | awk '{print $2}' | sed 's/^SHA256://')
+  if aws_fp=$(ec2 describe-key-pairs --key-names "$key_name" 2>/dev/null | jq -r '.KeyPairs[0].KeyFingerprint'); then
+    # AWS pads the base64 SHA-256 fingerprint of an ed25519 key with "=".
+    [[ "${aws_fp%%=*}" == "$local_fp" ]] \
+      || die "AWS key pair $key_name doesn't match $SSH_KEY.pub; delete it in EC2 > Key pairs ($AWS_DEFAULT_REGION) and run again"
+  else
+    say "Adding the test SSH key to AWS as key pair $key_name"
+    ec2 import-key-pair --key-name "$key_name" --public-key-material "fileb://$SSH_KEY.pub" \
       --tag-specifications "ResourceType=key-pair,Tags=[{Key=$TAG,Value=true}]" >/dev/null
   fi
   sg=$(ec2 describe-security-groups --filters "Name=group-name,Values=$TAG" "Name=vpc-id,Values=$vpc" \
@@ -347,7 +355,7 @@ else
   fi
   launcher > "$WORK/user-data.sh"
   SERVER_ID=$(ec2 run-instances --image-id "$ami" --instance-type "${PIAB_AWS_INSTANCE_TYPE:-t3.small}" \
-      --key-name "$TAG" --security-group-ids "$sg" --user-data "file://$WORK/user-data.sh" \
+      --key-name "$key_name" --security-group-ids "$sg" --user-data "file://$WORK/user-data.sh" \
       --block-device-mappings '[{"DeviceName": "/dev/sda1", "Ebs": {"VolumeSize": 20, "VolumeType": "gp3", "DeleteOnTermination": true}}]' \
       --metadata-options HttpTokens=required \
       --tag-specifications "ResourceType=instance,Tags=[{Key=Name,Value=$NAME},{Key=$TAG,Value=true}]" \

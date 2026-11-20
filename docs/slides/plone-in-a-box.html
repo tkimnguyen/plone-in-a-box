@@ -97,7 +97,7 @@ table { font-size: 0.7em; }
 .steps div { flex: 1; border-top: 6px solid var(--blue); padding-top: 12px; font-size: 0.85em; }
 .steps b { display: block; font-size: 1.3em; color: var(--blue); }
 footer { color: var(--muted); }
-;" data-marpit-pagination-total="9">
+;" data-marpit-pagination-total="11">
 <h2 id="the-problem">The problem</h2>
 <p>Plone is a mature, secure content management system. But running it yourself means:</p>
 <ul>
@@ -150,11 +150,11 @@ table { font-size: 0.7em; }
 .steps div { flex: 1; border-top: 6px solid var(--blue); padding-top: 12px; font-size: 0.85em; }
 .steps b { display: block; font-size: 1.3em; color: var(--blue); }
 footer { color: var(--muted); }
-;" data-marpit-pagination-total="9">
+;" data-marpit-pagination-total="11">
 <h2 id="the-idea">The idea</h2>
 <div class="steps">
 <div><b>1. Fill in a form</b>On your cloud provider's website: Linode, DigitalOcean, AWS or Hetzner.</div>
-<div><b>2. Choose a password</b>For the site's <code>admin</code> account. Everything else is optional.</div>
+<div><b>2. Choose a password</b>For the site's <code>admin</code> account. Everything else, such as a domain name, add-ons or a theme, is optional.</div>
 <div><b>3. Click Create</b>About 10 minutes later, the server's address shows your new Plone site.</div>
 </div>
 <br />
@@ -202,7 +202,7 @@ table { font-size: 0.7em; }
 .steps div { flex: 1; border-top: 6px solid var(--blue); padding-top: 12px; font-size: 0.85em; }
 .steps b { display: block; font-size: 1.3em; color: var(--blue); }
 footer { color: var(--muted); }
-;" data-marpit-pagination-total="9">
+;" data-marpit-pagination-total="11">
 <h2 id="whats-in-the-box">What's in the box</h2>
 <p>One Ubuntu 26.04 LTS server, running the <strong>official Plone Docker images</strong>:</p>
 <ul>
@@ -210,7 +210,7 @@ footer { color: var(--muted); }
 <li><strong>nginx</strong> in front, with optional HTTPS from <strong>Let's Encrypt</strong></li>
 <li>managed with plain <strong>Docker Compose</strong> in <code>/opt/plone</code>, so a Plone developer finds nothing unusual</li>
 </ul>
-<p>Versions are configurable; Plone 6.1 with Volto 18 also works.</p>
+<p>Versions are configurable; Plone 6.1 with Volto 18 also works. Add-ons and themes are optional settings.</p>
 </section>
 </foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="5" data-paginate="true" data-theme="default" data-style=":root {
   --blue: #0083be;
@@ -254,7 +254,7 @@ table { font-size: 0.7em; }
 .steps div { flex: 1; border-top: 6px solid var(--blue); padding-top: 12px; font-size: 0.85em; }
 .steps b { display: block; font-size: 1.3em; color: var(--blue); }
 footer { color: var(--muted); }
-;" data-marpit-pagination-total="9">
+;" data-marpit-pagination-total="11">
 <h2 id="safe-by-default">Safe by default</h2>
 <ul>
 <li>The admin password is <strong>the one you choose</strong>, or a generated one.</li>
@@ -306,7 +306,7 @@ table { font-size: 0.7em; }
 .steps div { flex: 1; border-top: 6px solid var(--blue); padding-top: 12px; font-size: 0.85em; }
 .steps b { display: block; font-size: 1.3em; color: var(--blue); }
 footer { color: var(--muted); }
-;" data-marpit-pagination-total="9">
+;" data-marpit-pagination-total="11">
 <h2 id="pick-a-provider">Pick a provider</h2>
 <table>
 <thead>
@@ -389,7 +389,7 @@ table { font-size: 0.7em; }
 .steps div { flex: 1; border-top: 6px solid var(--blue); padding-top: 12px; font-size: 0.85em; }
 .steps b { display: block; font-size: 1.3em; color: var(--blue); }
 footer { color: var(--muted); }
-;" data-marpit-pagination-total="9">
+;" data-marpit-pagination-total="11">
 <h2 id="why-its-useful">Why it's useful</h2>
 <ul>
 <li><strong>Small organizations, teams, projects</strong> get a real Plone site, or an intranet, without hiring an administrator.</li>
@@ -440,17 +440,16 @@ table { font-size: 0.7em; }
 .steps div { flex: 1; border-top: 6px solid var(--blue); padding-top: 12px; font-size: 0.85em; }
 .steps b { display: block; font-size: 1.3em; color: var(--blue); }
 footer { color: var(--muted); }
-;" data-marpit-pagination-total="9">
-<h2 id="coming-in-210-add-ons">Coming in 2.10: add-ons</h2>
+;" data-marpit-pagination-total="11">
+<h2 id="add-ons">Add-ons</h2>
 <p>List Python packages such as <code>collective.easyform</code> when you create the server. Then activate them in <strong>Site Setup → Add-ons</strong>.</p>
 <ul>
 <li>No custom build needed: the official backend image installs them.</li>
 <li>Held to the versions each Plone release was tested with.</li>
 <li>A misspelled name doesn't break anything: setup continues without the add-ons and says why.</li>
 </ul>
-<p>Next on the list: <strong>custom images</strong> for add-ons with a Volto part.</p>
 </section>
-</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="9" data-paginate="true" data-class="lead" data-theme="default" data-style=":root {
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="9" data-paginate="true" data-theme="default" data-style=":root {
   --blue: #0083be;
   --ink: #1f2933;
   --muted: #52606d;
@@ -471,7 +470,7 @@ table { font-size: 0.7em; }
 .steps div { flex: 1; border-top: 6px solid var(--blue); padding-top: 12px; font-size: 0.85em; }
 .steps b { display: block; font-size: 1.3em; color: var(--blue); }
 footer { color: var(--muted); }
-" lang="en-US" class="lead" data-marpit-pagination="9" style="--paginate:true;--class:lead;--theme:default;--style::root {
+" lang="en-US" data-marpit-pagination="9" style="--paginate:true;--theme:default;--style::root {
   --blue: #0083be;
   --ink: #1f2933;
   --muted: #52606d;
@@ -492,7 +491,109 @@ table { font-size: 0.7em; }
 .steps div { flex: 1; border-top: 6px solid var(--blue); padding-top: 12px; font-size: 0.85em; }
 .steps b { display: block; font-size: 1.3em; color: var(--blue); }
 footer { color: var(--muted); }
-;" data-marpit-pagination-total="9">
+;" data-marpit-pagination-total="11">
+<h2 id="themes-volto-light-theme">Themes: Volto Light Theme</h2>
+<p>Set the <strong>Frontend image</strong> to <code>ghcr.io/collective/plone-in-a-box-frontend:19-vlt</code> when you create the server.</p>
+<ul>
+<li>The site runs <strong>Volto Light Theme</strong>: logo, colours, header and footer, edited with the site's own settings.</li>
+<li>Setup also installs and activates the theme's backend add-on. Nothing to do in Site Setup.</li>
+<li><strong>Ready-made images</strong>, built from the official Volto image on GitHub and rebuilt every week.</li>
+<li>If the image can't be used, the site starts with the standard Volto look, and says why.</li>
+</ul>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="10" data-paginate="true" data-theme="default" data-style=":root {
+  --blue: #0083be;
+  --ink: #1f2933;
+  --muted: #52606d;
+}
+section {
+  font-family: &quot;Helvetica Neue&quot;, Arial, sans-serif;
+  color: var(--ink);
+  padding: 64px 80px;
+}
+h1, h2 { color: var(--blue); }
+h2 { font-size: 1.6em; margin-bottom: 0.4em; }
+strong { color: var(--ink); }
+section.lead { justify-content: center; }
+section.lead h1 { font-size: 2.4em; margin-bottom: 0.2em; }
+section.lead p { font-size: 1.15em; color: var(--muted); }
+table { font-size: 0.7em; }
+.steps { display: flex; gap: 24px; margin-top: 1em; }
+.steps div { flex: 1; border-top: 6px solid var(--blue); padding-top: 12px; font-size: 0.85em; }
+.steps b { display: block; font-size: 1.3em; color: var(--blue); }
+footer { color: var(--muted); }
+" lang="en-US" data-marpit-pagination="10" style="--paginate:true;--theme:default;--style::root {
+  --blue: #0083be;
+  --ink: #1f2933;
+  --muted: #52606d;
+}
+section {
+  font-family: &quot;Helvetica Neue&quot;, Arial, sans-serif;
+  color: var(--ink);
+  padding: 64px 80px;
+}
+h1, h2 { color: var(--blue); }
+h2 { font-size: 1.6em; margin-bottom: 0.4em; }
+strong { color: var(--ink); }
+section.lead { justify-content: center; }
+section.lead h1 { font-size: 2.4em; margin-bottom: 0.2em; }
+section.lead p { font-size: 1.15em; color: var(--muted); }
+table { font-size: 0.7em; }
+.steps { display: flex; gap: 24px; margin-top: 1em; }
+.steps div { flex: 1; border-top: 6px solid var(--blue); padding-top: 12px; font-size: 0.85em; }
+.steps b { display: block; font-size: 1.3em; color: var(--blue); }
+footer { color: var(--muted); }
+;" data-marpit-pagination-total="11">
+<h2 id="your-own-add-ons-and-themes">Your own add-ons and themes</h2>
+<ul>
+<li><strong>Volto add-ons:</strong> fork the repository, add the add-ons to one file, and GitHub builds and publishes your own frontend image. Setup installs its backend half too.</li>
+<li><strong>Packages that aren't on PyPI,</strong> or your own code: build a backend image on the official one, and switch a running server to it.</li>
+</ul>
+<p>Next on the list: a <strong>backend image setting</strong>, for projects made with cookieplone.</p>
+</section>
+</foreignObject></svg><svg data-marpit-svg="" viewBox="0 0 1280 720"><foreignObject width="1280" height="720"><section id="11" data-paginate="true" data-class="lead" data-theme="default" data-style=":root {
+  --blue: #0083be;
+  --ink: #1f2933;
+  --muted: #52606d;
+}
+section {
+  font-family: &quot;Helvetica Neue&quot;, Arial, sans-serif;
+  color: var(--ink);
+  padding: 64px 80px;
+}
+h1, h2 { color: var(--blue); }
+h2 { font-size: 1.6em; margin-bottom: 0.4em; }
+strong { color: var(--ink); }
+section.lead { justify-content: center; }
+section.lead h1 { font-size: 2.4em; margin-bottom: 0.2em; }
+section.lead p { font-size: 1.15em; color: var(--muted); }
+table { font-size: 0.7em; }
+.steps { display: flex; gap: 24px; margin-top: 1em; }
+.steps div { flex: 1; border-top: 6px solid var(--blue); padding-top: 12px; font-size: 0.85em; }
+.steps b { display: block; font-size: 1.3em; color: var(--blue); }
+footer { color: var(--muted); }
+" lang="en-US" class="lead" data-marpit-pagination="11" style="--paginate:true;--class:lead;--theme:default;--style::root {
+  --blue: #0083be;
+  --ink: #1f2933;
+  --muted: #52606d;
+}
+section {
+  font-family: &quot;Helvetica Neue&quot;, Arial, sans-serif;
+  color: var(--ink);
+  padding: 64px 80px;
+}
+h1, h2 { color: var(--blue); }
+h2 { font-size: 1.6em; margin-bottom: 0.4em; }
+strong { color: var(--ink); }
+section.lead { justify-content: center; }
+section.lead h1 { font-size: 2.4em; margin-bottom: 0.2em; }
+section.lead p { font-size: 1.15em; color: var(--muted); }
+table { font-size: 0.7em; }
+.steps { display: flex; gap: 24px; margin-top: 1em; }
+.steps div { flex: 1; border-top: 6px solid var(--blue); padding-top: 12px; font-size: 0.85em; }
+.steps b { display: block; font-size: 1.3em; color: var(--blue); }
+footer { color: var(--muted); }
+;" data-marpit-pagination-total="11">
 <h2 id="get-started">Get started</h2>
 <p><strong>github.com/tkimnguyen/plone-in-a-box</strong></p>
 <p>Step-by-step instructions for each provider are in the setup guide.</p>

@@ -55,7 +55,7 @@ That's a system administrator's job. **Most people who want a Plone site aren't 
 
 <div class="steps">
 <div><b>1. Fill in a form</b>On your cloud provider's website: Linode, DigitalOcean, AWS or Hetzner.</div>
-<div><b>2. Choose a password</b>For the site's <code>admin</code> account. Everything else is optional.</div>
+<div><b>2. Choose a password</b>For the site's <code>admin</code> account. Everything else, such as a domain name, add-ons or a theme, is optional.</div>
 <div><b>3. Click Create</b>About 10 minutes later, the server's address shows your new Plone site.</div>
 </div>
 
@@ -73,7 +73,7 @@ One Ubuntu 26.04 LTS server, running the **official Plone Docker images**:
 - **nginx** in front, with optional HTTPS from **Let's Encrypt**
 - managed with plain **Docker Compose** in `/opt/plone`, so a Plone developer finds nothing unusual
 
-Versions are configurable; Plone 6.1 with Volto 18 also works.
+Versions are configurable; Plone 6.1 with Volto 18 also works. Add-ons and themes are optional settings.
 
 ---
 
@@ -112,7 +112,7 @@ Developers can use **Terraform** for AWS, DigitalOcean and Hetzner instead.
 
 ---
 
-## Coming in 2.10: add-ons
+## Add-ons
 
 List Python packages such as `collective.easyform` when you create the server. Then activate them in **Site Setup → Add-ons**.
 
@@ -120,7 +120,25 @@ List Python packages such as `collective.easyform` when you create the server. T
 - Held to the versions each Plone release was tested with.
 - A misspelled name doesn't break anything: setup continues without the add-ons and says why.
 
-Next on the list: **custom images** for add-ons with a Volto part.
+---
+
+## Themes: Volto Light Theme
+
+Set the **Frontend image** to `ghcr.io/collective/plone-in-a-box-frontend:19-vlt` when you create the server.
+
+- The site runs **Volto Light Theme**: logo, colours, header and footer, edited with the site's own settings.
+- Setup also installs and activates the theme's backend add-on. Nothing to do in Site Setup.
+- **Ready-made images**, built from the official Volto image on GitHub and rebuilt every week.
+- If the image can't be used, the site starts with the standard Volto look, and says why.
+
+---
+
+## Your own add-ons and themes
+
+- **Volto add-ons:** fork the repository, add the add-ons to one file, and GitHub builds and publishes your own frontend image. Setup installs its backend half too.
+- **Packages that aren't on PyPI,** or your own code: build a backend image on the official one, and switch a running server to it.
+
+Next on the list: a **backend image setting**, for projects made with cookieplone.
 
 ---
 

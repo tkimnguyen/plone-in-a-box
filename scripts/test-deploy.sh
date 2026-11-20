@@ -284,10 +284,13 @@ elif [[ "$PROVIDER" == hetzner ]]; then
   fingerprint=$(ssh-keygen -l -E md5 -f "$SSH_KEY.pub" | awk '{print $2}' | sed 's/^MD5://')
   key_id=$(api GET "/ssh_keys?fingerprint=$fingerprint" | jq -r '.ssh_keys[0].id // empty')
   if [[ -z "$key_id" ]]; then
-    say "Adding the test SSH key to the Hetzner project as $TAG"
+    # Named after the fingerprint, since key names must be unique in a project
+    # and each computer running these tests has its own key.
+    key_name="$TAG-$(tr -d : <<<"$fingerprint" | cut -c1-8)"
+    say "Adding the test SSH key to the Hetzner project as $key_name"
     # If another run adds the key at the same moment, use the one it added.
-    key_id=$(api POST /ssh_keys "$(jq -nc --arg k "$(cat "$SSH_KEY.pub")" --arg tag "$TAG" \
-        '{name: $tag, public_key: $k, labels: {($tag): "true"}}')" 2>/dev/null | jq -r '.ssh_key.id') \
+    key_id=$(api POST /ssh_keys "$(jq -nc --arg k "$(cat "$SSH_KEY.pub")" --arg tag "$TAG" --arg name "$key_name" \
+        '{name: $name, public_key: $k, labels: {($tag): "true"}}')" 2>/dev/null | jq -r '.ssh_key.id') \
       || key_id=$(api GET "/ssh_keys?fingerprint=$fingerprint" | jq -r '.ssh_keys[0].id // empty')
     [[ -n "$key_id" ]] || die "couldn't add the SSH key to the Hetzner project"
   fi

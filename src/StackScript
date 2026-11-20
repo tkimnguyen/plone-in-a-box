@@ -30,6 +30,11 @@ export DEBIAN_FRONTEND=noninteractive
 # Keep a copy of all output in one place on every provider.
 LOG_FILE=/var/log/plone-in-a-box.log
 exec > >(tee -a "$LOG_FILE") 2>&1
+LOG_TEE_PID=$!
+# On exit, wait for tee to write the last lines: when setup resumes after a
+# restart, systemd stops everything in the service as soon as this script ends.
+flush_log() { exec >/dev/null 2>&1; wait "$LOG_TEE_PID" 2>/dev/null || true; }
+trap flush_log EXIT
 
 ADMIN_PASSWORD="${ADMIN_PASSWORD:-}"
 DOMAIN="${DOMAIN:-}"
@@ -562,7 +567,7 @@ progress 4
 # A frontend image that can't be pulled (misspelled, private, gone) is left
 # out, so the site still starts with the standard Volto image. A ready-made
 # image's labels name the backend add-ons and site behaviors it needs.
-IMAGE_ADDONS="" IMAGE_BEHAVIORS=""
+IMAGE_ADDONS="" IMAGE_BEHAVIORS="" IMAGE_ACTIVATED=0
 if [[ -n "$FRONTEND_IMAGE" ]]; then
   log "Pulling the frontend image ${FRONTEND_IMAGE}"
   if docker pull --quiet "$FRONTEND_IMAGE"; then
@@ -641,12 +646,33 @@ if [[ "$NEW_ADMIN_PASSWORD_SET" == 0 && ( -n "$IMAGE_ADDONS" || -n "$IMAGE_BEHAV
   log "Activating what the frontend image needs: ${IMAGE_ADDONS} ${IMAGE_BEHAVIORS}"
   site_addons=""
   for addon in $IMAGE_ADDONS; do site_addons+=" ${addon%%[[~=!<>]*}"; done
-  if ! compose run --rm --no-deps -e SITE_ADDONS="$site_addons" -e SITE_BEHAVIORS="$IMAGE_BEHAVIORS" \
+  if compose run --rm --no-deps -e SITE_ADDONS="$site_addons" -e SITE_BEHAVIORS="$IMAGE_BEHAVIORS" \
       -v "$APP_DIR/activate_frontend_addons.py:/app/scripts/activate_frontend_addons.py:ro" \
       backend run /app/scripts/activate_frontend_addons.py; then
+    IMAGE_ACTIVATED=1
+  else
     log "Activating them failed (see above); activate them in Site Setup > Add-ons and enable the behaviors in Site Setup > Content Types > Plone Site"
     FRONTEND_NOTE="Activating the add-ons the frontend image needs failed: activate ${IMAGE_ADDONS} in Site Setup > Add-ons, and enable ${IMAGE_BEHAVIORS} in Site Setup > Content Types > Plone Site > Behaviors."
   fi
+fi
+
+# Add-ons left for the admin to activate: not those setup activated for the
+# frontend image.
+ADDONS_TODO="$ADDONS"
+if [[ "$IMAGE_ACTIVATED" == 1 ]]; then
+  ADDONS_TODO=""
+  for addon in $ADDONS; do
+    [[ " $IMAGE_ADDONS " == *" $addon "* ]] || ADDONS_TODO+="${ADDONS_TODO:+ }$addon"
+  done
+fi
+if [[ -z "$ADDONS" ]]; then
+  ADDONS_LINE=""
+elif [[ -z "$ADDONS_TODO" ]]; then
+  ADDONS_LINE="Backend add-ons: ${ADDONS} (activated for the frontend image)"
+elif [[ "$ADDONS_TODO" == "$ADDONS" ]]; then
+  ADDONS_LINE="Backend add-ons: ${ADDONS} (activate them in Site Setup > Add-ons)"
+else
+  ADDONS_LINE="Backend add-ons: ${ADDONS} (activate ${ADDONS_TODO} in Site Setup > Add-ons; the others are activated for the frontend image)"
 fi
 
 progress 6
@@ -745,7 +771,7 @@ Site:      ${SITE_URL}
 Username:  admin
 Password:  ${PASSWORD_LINE}
 ${PASSWORD_NOTE}
-${ADDONS:+Backend add-ons: ${ADDONS} (activate them in Site Setup > Add-ons)}${ADDONS_NOTE}
+${ADDONS_LINE}${ADDONS_NOTE}
 ${FRONTEND_IMAGE:+Frontend image: ${FRONTEND_IMAGE}}${FRONTEND_NOTE}
 Store the password in a password manager, then delete this file.
 Stack files: ${APP_DIR} (docker compose --project-directory ${APP_DIR} ps)
@@ -768,8 +794,8 @@ if [[ -f /var/run/reboot-required ]]; then
   log "Some updates need a restart to take effect; restart the server when convenient (sudo reboot). Plone starts again by itself."
 fi
 
-if [[ -n "$ADDONS" ]]; then
-  log "Backend add-ons installed: ${ADDONS}. Activate them in Site Setup > Add-ons."
+if [[ -n "$ADDONS_LINE" ]]; then
+  log "$ADDONS_LINE"
 fi
 if [[ -n "$ADDONS_NOTE" ]]; then
   log "$ADDONS_NOTE"

@@ -72,8 +72,9 @@ One-time setup for `scripts/test-deploy.sh`:
   `security add-generic-password -U -a "$USER" -s piab-webhook-teams -w "$(pbpaste)"`; the interactive `-w`
   prompt cuts input off at 128 characters, too short for Teams. Where to create them:
   * Teams: the channel's **•••** menu → **Workflows** → **Send webhook alerts to a channel**
-  * Slack: [api.slack.com/apps](https://api.slack.com/apps) → **Create New App** → **From scratch** →
-    **Incoming Webhooks** → on → **Add New Webhook**
+  * Slack: [api.slack.com/apps](https://api.slack.com/apps) → **Create New App** → **Pick features**, with only the
+    `incoming-webhook` scope and no events → **Create and Install** → pick the channel → **Allow**; the URL is
+    under **Incoming Webhooks**
   * Discord: **Server Settings → Integrations → Webhooks → New Webhook** → **Copy Webhook URL**
   * Google Chat (Google Workspace only): the space's name → **Apps & integrations** → **Webhooks**
   * Mattermost: **Integrations → Incoming Webhooks → Add Incoming Webhook**

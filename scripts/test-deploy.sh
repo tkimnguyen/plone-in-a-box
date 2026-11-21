@@ -318,7 +318,9 @@ if [[ "$PROVIDER" == linode ]]; then
       --arg frontend "$FRONTEND_IMAGE" --arg type "${PIAB_LINODE_TYPE:-g6-nanode-1}" --arg notify "$NOTIFY_URL" \
       '{region: $region, type: $type, image: ("linode/ubuntu" + $ubuntu), label: $label, tags: [$tag],
         root_pass: $root, authorized_keys: [$key], stackscript_id: $ss,
-        stackscript_data: {ADMIN_PASSWORD: $pw, ADDONS: $addons, FRONTEND_IMAGE: $frontend, NOTIFY_URL: $notify},
+        # Only the fields that are set, so older releases (without them) work too.
+        stackscript_data: ({ADMIN_PASSWORD: $pw, ADDONS: $addons, FRONTEND_IMAGE: $frontend, NOTIFY_URL: $notify}
+          | with_entries(select(.value != ""))),
         booted: true}
        + (if $fw == "" then {} else {firewall_id: ($fw | tonumber)} end)')
   created=$(api POST /linode/instances "$body")

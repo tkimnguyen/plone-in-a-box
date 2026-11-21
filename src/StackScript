@@ -569,6 +569,9 @@ fi
 EOF
 chmod 755 /usr/local/bin/plone-reset-admin-password
 
+# >>> update tools
+# From here to "<<< update tools", src/add-updates.sh installs the same files on
+# servers set up before 2.12. Only APP_DIR may be used here.
 # Posts a notice to the notification URL, if one was set: JSON for Slack,
 # Google Chat, Mattermost and Discord webhooks, plain text with a title for
 # anything else (such as ntfy). Exit 0: sent; 1: failed; 3: no URL set.
@@ -866,6 +869,7 @@ exit 0
 EOF
 chmod 755 /etc/update-motd.d/90-plone-in-a-box
 systemctl daemon-reload
+# <<< update tools
 
 cd "$APP_DIR"
 compose() { docker compose --project-directory "$APP_DIR" "$@"; }

@@ -22,6 +22,9 @@
   The DigitalOcean and Hetzner configurations now send the script compressed
   and unpack it on the server, and the AWS one leaves out its comment lines
   before compressing. CI checks the sizes.
+- scripts/test-deploy.sh: --notify-url URL sends the notices to a topic you
+  watch. On a Mac it keeps the computer awake while it runs (caffeinate), since
+  idle sleep stalled the checks and failed them.
 - Docs: knowing when the site is down, with an uptime check.
 - Docs: building your own frontend image with other Volto add-ons (fork, add
   an entry to the workflow, and GitHub Actions builds and publishes it), and

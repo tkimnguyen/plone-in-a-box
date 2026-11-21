@@ -66,6 +66,12 @@
 
 set -euo pipefail
 
+# On a Mac, stay awake until the test is done: idle sleep stalls the checks over
+# SSH, and makes them time out or fail.
+if [[ "$(uname)" == Darwin && -z "${PIAB_TEST_CAFFEINATED:-}" ]] && command -v caffeinate >/dev/null; then
+  PIAB_TEST_CAFFEINATED=1 exec caffeinate -i "$0" "$@"
+fi
+
 TAG=piab-test
 UBUNTU=${PIAB_TEST_UBUNTU:-26.04}
 case "$UBUNTU" in

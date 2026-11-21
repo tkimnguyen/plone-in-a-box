@@ -75,7 +75,8 @@ One-time setup for `scripts/test-deploy.sh`:
   * Slack: [api.slack.com/apps](https://api.slack.com/apps) → **Create New App** → **Pick features**, with only the
     `incoming-webhook` scope and no events → **Create and Install** → pick the channel → **Allow**; the URL is
     under **Incoming Webhooks**
-  * Discord: **Server Settings → Integrations → Webhooks → New Webhook** → **Copy Webhook URL**
+  * Discord: the channel's **Edit Channel** → **Integrations** → **Create Webhook**, then click it → **Copy Webhook URL**
+    (on a community server, make the test channel private first)
   * Google Chat (Google Workspace only): the space's name → **Apps & integrations** → **Webhooks**
   * Mattermost: **Integrations → Incoming Webhooks → Add Incoming Webhook**
   * ntfy: `https://ntfy.sh/<a long random topic>`

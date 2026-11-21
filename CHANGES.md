@@ -34,7 +34,7 @@
   settings that are set, so older releases (--ref 2.9) can be deployed.
 - scripts/test-notify.sh sends sample update notices to real Teams, Slack,
   Discord, Google Chat, Mattermost or ntfy channels, with webhook URLs kept in
-  the Keychain. Tested with Teams and Slack.
+  the Keychain. Tested with Teams, Slack and Discord.
 - Docs: knowing when the site is down, with an uptime check.
 - Docs: building your own frontend image with other Volto add-ons (fork, add
   an entry to the workflow, and GitHub Actions builds and publishes it), and

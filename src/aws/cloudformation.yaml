@@ -171,7 +171,7 @@ Parameters:
     ConstraintDescription: Must start with https://.
     Description: >-
       Optional. Update reports are posted here, for example https://ntfy.sh/a-long-random-topic for the ntfy
-      phone app, or a Slack, Discord, Google Chat or Mattermost incoming webhook URL. Keep it private.
+      phone app, or a Slack, Discord, Google Chat, Mattermost or Microsoft Teams webhook URL. Keep it private.
   PloneVersion:
     Type: String
     Default: "6.2"

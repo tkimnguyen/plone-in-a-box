@@ -56,7 +56,7 @@ export FRONTEND_IMAGE=''
 export AUTO_UPDATE='yes'
 # Notification URL, optional: update reports are posted here, for example
 # 'https://ntfy.sh/a-long-random-topic' (the ntfy phone app), or a Slack,
-# Discord, Google Chat or Mattermost incoming webhook URL. Keep it private.
+# Discord, Google Chat, Mattermost or Microsoft Teams webhook URL. Keep it private.
 export NOTIFY_URL=''
 
 # --- No need to edit below this line -----------------------------------------

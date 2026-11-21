@@ -13,7 +13,7 @@
 #   ... | sudo NOTIFY_URL=https://ntfy.sh/your-long-random-topic bash
 #   AUTO_UPDATE=no   install plone-update, but don't run it every week
 #   NOTIFY_URL=URL   post update reports here (ntfy, or a Slack, Discord,
-#                    Google Chat or Mattermost incoming webhook)
+#                    Google Chat, Mattermost or Microsoft Teams webhook)
 #   UPDATE_NOW=no    don't run plone-update at the end
 
 # Everything is inside main, so bash has read the whole script before any

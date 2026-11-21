@@ -15,7 +15,7 @@
 - Notification URL: an optional setting (NOTIFY_URL, the NotifyUrl
   parameter, the notify_url Terraform variable) where update reports are
   posted: ntfy (https://ntfy.sh/<topic>) for phone notifications, or a Slack,
-  Discord, Google Chat or Mattermost webhook. Setup sends a first notice when
+  Discord, Google Chat, Mattermost or Microsoft Teams (workflow) webhook. Setup sends a first notice when
   the site is ready. Only root can read the URL on the server.
 - Fix: Terraform on Hetzner would fail, because the provisioning script grew
   past Hetzner's 32 KiB user data limit; on AWS it was close to EC2's 16 KB.

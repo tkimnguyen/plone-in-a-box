@@ -95,7 +95,7 @@ variable "frontend_image" {
 }
 
 variable "notify_url" {
-  description = "Notification URL, optional: update reports are posted here, for example https://ntfy.sh/a-long-random-topic, or a Slack, Discord, Google Chat or Mattermost webhook."
+  description = "Notification URL, optional: update reports are posted here, for example https://ntfy.sh/a-long-random-topic, or a Slack, Discord, Google Chat, Mattermost or Microsoft Teams webhook."
   type        = string
   default     = ""
   sensitive   = true

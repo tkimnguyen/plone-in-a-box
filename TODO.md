@@ -17,7 +17,7 @@
   of the same tags only, after a database dump, with a rollback if the site doesn't come back; failed builds are
   skipped. Reports go to the login message, and by email through the site's own mail settings.
 - [x] **Plone hotfixes**, documented (setup guide, "Updates").
-- [ ] Offer `plone-update` to servers set up before 2.12 (a one-line installer?).
+- [x] **Older servers** (2.12): `src/add-updates.sh` installs `plone-update` on servers set up with 2.0–2.11.
 - [x] **Notification URL** (2.12): ntfy, or Slack, Discord, Google Chat, Mattermost and Microsoft Teams webhooks.
 
 ## Support custom Plone projects (e.g. from cookieplone)

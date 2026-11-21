@@ -413,9 +413,29 @@ sudo systemctl disable --now plone-update.timer
 sudo systemctl enable --now plone-update.timer
 ```
 
-The log is in `/var/log/plone-update.log`. Automatic updates need a server set up with Plone in a Box 2.12 or
-later; on an older one, `sudo docker compose --project-directory /opt/plone pull` and then `up -d` install newer
-images of the same versions, without the backup and the check.
+The log is in `/var/log/plone-update.log`.
+
+### Servers set up before 2.12
+
+A server set up with an older Plone in a Box (2.0 or later) can get automatic updates too. Open its console
+(Linode's **Launch LISH Console**, DigitalOcean's **Access → Launch Droplet Console**, AWS's **Connect → EC2
+Instance Connect**, Hetzner's **Console**, or SSH) and run:
+
+```
+curl -fsSL https://raw.githubusercontent.com/tkimnguyen/plone-in-a-box/2.11/src/add-updates.sh | sudo bash
+```
+
+It installs `plone-update`, the weekly updates and the login message, exactly as setup does on a new server, and
+then runs `sudo plone-update` once, so the site gets any patch releases it's missing (after a backup). To get the
+reports at a notification URL, put it between `sudo` and `bash`:
+
+```
+curl -fsSL https://raw.githubusercontent.com/tkimnguyen/plone-in-a-box/2.11/src/add-updates.sh | sudo NOTIFY_URL=https://ntfy.sh/your-long-random-topic bash
+```
+
+`AUTO_UPDATE=no` in the same place installs `plone-update` without the weekly updates. Running the command again,
+for example after a new Plone in a Box release, brings these tools up to date; the weekly updates stay on or off as
+they were.
 
 **A new Plone or Volto release** (6.2 to 6.3, Volto 19 to 20) can need content and add-on changes, so it's never
 automatic. Read the Plone upgrade notes, take a backup, change `PLONE_VERSION` and `VOLTO_VERSION` in

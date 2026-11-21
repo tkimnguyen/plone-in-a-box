@@ -112,7 +112,8 @@ Details: [setup guide, Hetzner](docs/setup-guide.md#console-deployment-easiest-2
   deploying; see [Themes and frontend images](docs/setup-guide.md#themes-and-frontend-images).
 * **Updates:** Ubuntu installs its security updates by itself, and every week the server installs Plone, Volto and
   PostgreSQL patch releases, after a database backup, and undoes them if the site doesn't come back. Reports can go
-  to your phone (ntfy), a team chat, or by email; see [Updates](docs/setup-guide.md#updates).
+  to your phone (ntfy), a team chat, or by email; see [Updates](docs/setup-guide.md#updates). A server set up
+  before 2.12 gets them with [one command](docs/setup-guide.md#servers-set-up-before-212).
 
 The setup guide also covers [backups, upgrades and troubleshooting](docs/setup-guide.md).
 

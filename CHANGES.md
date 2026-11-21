@@ -15,8 +15,14 @@
 - Notification URL: an optional setting (NOTIFY_URL, the NotifyUrl
   parameter, the notify_url Terraform variable) where update reports are
   posted: ntfy (https://ntfy.sh/<topic>) for phone notifications, or a Slack,
-  Discord, Google Chat, Mattermost or Microsoft Teams (workflow) webhook. Setup sends a first notice when
-  the site is ready. Only root can read the URL on the server.
+  Discord, Google Chat, Mattermost or Microsoft Teams (workflow) webhook.
+  Setup sends a first notice when the site is ready. Only root can read the URL on the server.
+- Servers set up before 2.12 (2.0 or later) get automatic updates with one
+  command on the server: curl ... src/add-updates.sh | sudo bash (setup guide,
+  "Servers set up before 2.12"). It installs the same update tools as setup,
+  taken from the release's provisioning script, optionally with a
+  notification URL, and runs plone-update once. Running it again updates the
+  tools.
 - Fix: Terraform on Hetzner would fail, because the provisioning script grew
   past Hetzner's 32 KiB user data limit; on AWS it was close to EC2's 16 KB.
   The DigitalOcean and Hetzner configurations now send the script compressed
@@ -24,7 +30,8 @@
   before compressing. CI checks the sizes.
 - scripts/test-deploy.sh: --notify-url URL sends the notices to a topic you
   watch. On a Mac it keeps the computer awake while it runs (caffeinate), since
-  idle sleep stalled the checks and failed them.
+  idle sleep stalled the checks and failed them. On Linode it sends only the
+  settings that are set, so older releases (--ref 2.9) can be deployed.
 - Docs: knowing when the site is down, with an uptime check.
 - Docs: building your own frontend image with other Volto add-ons (fork, add
   an entry to the workflow, and GitHub Actions builds and publishes it), and

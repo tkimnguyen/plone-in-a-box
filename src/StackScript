@@ -585,7 +585,7 @@ url=$(cat /var/lib/plone-in-a-box/notify-url 2>/dev/null) || exit 3
 [[ -n "$url" ]] || exit 3
 title=$1 message=$2
 json() { python3 -c 'import json, sys; print(json.dumps({sys.argv[1]: sys.argv[2]}))' "$1" "$2"; }
-# Teams workflows ("Post to a channel when a webhook request is received") take
+# Teams workflows ("Send webhook alerts to a channel") take
 # an Adaptive Card: the title in bold, then a text block per line.
 card() {
   python3 - "$1" "$2" <<'PY'

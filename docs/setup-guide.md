@@ -390,8 +390,9 @@ You hear about it in up to three places:
   only you know (anyone who knows it can read the messages), and use `https://ntfy.sh/<that topic>` as the
   **Notification URL**. An incoming webhook URL from Slack, Discord, Google Chat, Mattermost or Microsoft Teams
   works too, to post the reports in a team channel. For Teams, open the channel's **•••** menu, choose
-  **Workflows**, pick **Post to a channel when a webhook request is received**, and copy the URL it shows at the
-  end. Setup sends a first notice when the site is ready, so you know right away that it works. To change the URL later, edit `/var/lib/plone-in-a-box/notify-url` on the server (only root can read it).
+  **Workflows**, pick **Send webhook alerts to a channel** (older Teams: **Post to a channel when a webhook
+  request is received**), and copy the URL it shows at the end.
+  Setup sends a first notice when the site is ready, so you know right away that it works. To change the URL later, edit `/var/lib/plone-in-a-box/notify-url` on the server (only root can read it).
 * **By email**, if the site can send email: set the **Site 'From' address** and the mail server in **Site Setup →
   Mail** (Plone needs these anyway, for password-reset emails). The report goes to that address, after anything
   but a week with nothing new. Most cloud providers block sending email directly, so use your email provider's

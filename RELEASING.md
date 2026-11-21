@@ -66,10 +66,22 @@ One-time setup for `scripts/test-deploy.sh`:
   [`scripts/aws-test-cloudformation-policy.json`](scripts/aws-test-cloudformation-policy.json), and attach it to
   `piab-test`. It allows only stacks named `piab-test-*`. Create test stacks with the stack tag `piab-test=true`
   (`aws cloudformation create-stack --tags Key=piab-test,Value=true`), so their instance and Elastic IP carry it.
+* **Chat notices**, for `scripts/test-notify.sh`, which sends sample update notices to real channels when the
+  notify script changes: a webhook in a test channel per service, stored as `piab-webhook-<service>`
+  (`teams`, `slack`, `discord`, `gchat`, `mattermost` or `ntfy`). Copy the URL, then
+  `security add-generic-password -U -a "$USER" -s piab-webhook-teams -w "$(pbpaste)"`; the interactive `-w`
+  prompt cuts input off at 128 characters, too short for Teams. Where to create them:
+  * Teams: the channel's **•••** menu → **Workflows** → **Send webhook alerts to a channel**
+  * Slack: [api.slack.com/apps](https://api.slack.com/apps) → **Create New App** → **From scratch** →
+    **Incoming Webhooks** → on → **Add New Webhook**
+  * Discord: **Server Settings → Integrations → Webhooks → New Webhook** → **Copy Webhook URL**
+  * Google Chat (Google Workspace only): the space's name → **Apps & integrations** → **Webhooks**
+  * Mattermost: **Integrations → Incoming Webhooks → Add Incoming Webhook**
+  * ntfy: `https://ntfy.sh/<a long random topic>`
 
 Tokens stay in the macOS Keychain; never paste them into chats or commit them. Remove one with
-`security delete-generic-password -s piab-linode-token` (or `piab-do-token`, `piab-hetzner-token`, or the two AWS
-entries). Deactivate
+`security delete-generic-password -s piab-linode-token` (or `piab-do-token`, `piab-hetzner-token`, the two AWS
+entries or a `piab-webhook-<service>`). Deactivate
 the AWS access key in IAM when it's not needed; it doesn't expire by itself.
 
 ## 2. Release

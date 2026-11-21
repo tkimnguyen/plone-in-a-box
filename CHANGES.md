@@ -32,6 +32,9 @@
   watch. On a Mac it keeps the computer awake while it runs (caffeinate), since
   idle sleep stalled the checks and failed them. On Linode it sends only the
   settings that are set, so older releases (--ref 2.9) can be deployed.
+- scripts/test-notify.sh sends sample update notices to real Teams, Slack,
+  Discord, Google Chat, Mattermost or ntfy channels, with webhook URLs kept in
+  the Keychain. Tested with Teams.
 - Docs: knowing when the site is down, with an uptime check.
 - Docs: building your own frontend image with other Volto add-ons (fork, add
   an entry to the workflow, and GitHub Actions builds and publishes it), and

@@ -584,7 +584,8 @@ set -uo pipefail
 url=$(cat /var/lib/plone-in-a-box/notify-url 2>/dev/null) || exit 3
 [[ -n "$url" ]] || exit 3
 title=$1 message=$2
-json() { python3 -c 'import json, sys; print(json.dumps({sys.argv[1]: sys.argv[2]}))' "$1" "$2"; }
+# json <key> <value> [flags]: a JSON object; Discord's flags 4 turns off link previews.
+json() { python3 -c 'import json, sys; d = {sys.argv[1]: sys.argv[2]}; d.update({"flags": int(sys.argv[3])} if len(sys.argv) > 3 else {}); print(json.dumps(d))' "$@"; }
 # Teams workflows ("Send webhook alerts to a channel") take
 # an Adaptive Card: the title in bold, then a text block per line.
 card() {
@@ -609,7 +610,7 @@ case "$url" in
   https://*.logic.azure.com[:/]*|https://*.powerplatform.com[:/]*|https://*.webhook.office.com[:/]*)
     body=$(card "$title" "$message") type=application/json ;;
   https://discord.com/api/webhooks/*|https://discordapp.com/api/webhooks/*)
-    body=$(json content "**${title}**"$'\n'"${message:0:1800}") type=application/json ;;
+    body=$(json content "**${title}**"$'\n'"${message:0:1800}" 4) type=application/json ;;
   https://hooks.slack.com/*|https://chat.googleapis.com/*)
     body=$(json text "*${title}*"$'\n'"${message}") type=application/json ;;
   https://*/hooks/*)  # Mattermost

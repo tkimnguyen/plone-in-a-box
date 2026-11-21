@@ -39,7 +39,7 @@ grep -q "$urlfile" "$work/notify" || { echo "Couldn't find the notify script in 
 
 # The same wording as setup and plone-update use.
 site=http://203.0.113.7
-guide=https://github.com/tkimnguyen/plone-in-a-box/blob/main/docs/setup-guide.md#updates
+guide=$(sed -n "s/^GUIDE=//p" "$REPO/src/StackScript")
 report() {  # report <summary> <details>: the body plone-update sends
   printf '%s\n\n%s\n\n%s\n\nThe log is in %s on the server. Turn automatic updates off: sudo systemctl disable --now plone-update.timer\nUpdates and backups: %s' \
     "$site" "$1" "$2" /var/log/plone-update.log "$guide"
@@ -47,14 +47,14 @@ report() {  # report <summary> <details>: the body plone-update sends
 titles=(
   "Plone in a Box is ready (${site})"
   "Plone in a Box: Updated (${site})"
-  "Plone in a Box: Undone (${site})"
+  "Plone in a Box: Update failed and was undone (${site})"
 )
 messages=(
   "Your Plone site is ready: ${site}"$'\n'"Log in as admin. Update reports will be sent here."
-  "$(report "Updated: Plone 6.2.2 -> 6.2.3, Volto 19.8.0 -> 19.8.1" \
-     "Database backup: /var/backups/plone/plone-2026-11-22-0412.sql.gz (the last 4 are kept)")"
-  "$(report "Undone: the site didn't come back with the new backend image, so it runs the previous one again; that build is skipped from now on. The reason is in /var/log/plone-update.log." \
-     "Database backup: /var/backups/plone/plone-2026-11-22-0412.sql.gz (the last 4 are kept)")"
+  "$(report "Updated: Plone 6.2.2, Volto 19.8.1, PostgreSQL 17.12 -> Plone 6.2.3, Volto 19.8.1, PostgreSQL 17.12" \
+     "Database backup from before the update: /var/backups/plone/plone-2026-11-22-0412.sql.gz")"
+  "$(report "Update failed and was undone: back on Plone 6.2.2, Volto 19.8.1, PostgreSQL 17.12" \
+     "The site didn't come back with the new backend image, so it runs the previous one again; that build is skipped from now on. The reason is in /var/log/plone-update.log."$'\n'"Database backup from before the update: /var/backups/plone/plone-2026-11-22-0412.sql.gz")"
 )
 
 sent=0 failed=0

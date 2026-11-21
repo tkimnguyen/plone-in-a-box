@@ -78,7 +78,9 @@ One-time setup for `scripts/test-deploy.sh`:
   * Discord: the channel's **Edit Channel** → **Integrations** → **Create Webhook**, then click it → **Copy Webhook URL**
     (on a community server, make the test channel private first)
   * Google Chat (Google Workspace only): the space's name → **Apps & integrations** → **Add webhooks** → **Save**
-  * Mattermost: **Integrations → Incoming Webhooks → Add Incoming Webhook**
+  * Mattermost: **Integrations → Incoming Webhooks → Add Incoming Webhook**. Without a server, a throwaway one
+    works: `mattermost/mattermost-preview` in Docker behind Caddy at `<ip-with-dashes>.sslip.io` (for HTTPS) on a
+    2 GB test server; the first user created is the admin
   * ntfy: `https://ntfy.sh/<a long random topic>`
 
 Tokens stay in the macOS Keychain; never paste them into chats or commit them. Remove one with

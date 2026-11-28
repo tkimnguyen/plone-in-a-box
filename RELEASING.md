@@ -315,5 +315,6 @@ password are rejected.
 Once the Discord notice is out, post the release in the forum thread
 [github/collective/plone-in-a-box: an easy way to deploy a secure cloud server](https://community.plone.org/t/github-collective-plone-in-a-box-an-easy-way-to-deploy-a-secure-cloud-server/23310),
 so people who aren't on Discord hear about it too. Use the summary for site owners from `CHANGES.md`, with links to
-the GitHub release and the slides (https://collective.github.io/plone-in-a-box/slides/), and thank anyone who
+the release on collective (https://github.com/collective/plone-in-a-box/releases/tag/<version>, the project's
+public home, which the thread is named after) and the slides (https://collective.github.io/plone-in-a-box/slides/), and thank anyone who
 contributed, with their forum handle.
